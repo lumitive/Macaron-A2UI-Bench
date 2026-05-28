@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "object",
+      "description": "Current progress value.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    },
+    "max": {
+      "type": "object",
+      "description": "Maximum progress value.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    },
+    "style": {
+      "type": "string",
+      "description": "Progress color style. \"positive\" uses #8CA62A and \"danger\" uses #F63B39. Defaults to \"positive\".",
+      "enum": [
+        "positive",
+        "danger"
+      ]
+    },
+    "iconName": {
+      "type": "object",
+      "description": "Optional icon name for center content. Uses Macaron custom icon names.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "iconStyle": {
+      "type": "string",
+      "description": "Optional icon style for iconName. One of \"line\" or \"filled\". Defaults to \"line\".",
+      "enum": [
+        "line",
+        "filled"
+      ]
+    }
+  },
+  "required": [
+    "value",
+    "max"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CircularProgress"
+}

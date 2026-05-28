@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "description": "An adaptive up-to-three-column selector for Macaron. Best for compact options that benefit from fast visual comparison. Each cell overlays a check indicator at the top-right without affecting child layout width.",
+  "properties": {
+    "selection": {
+      "type": "object",
+      "description": "The currently selected option values, bound to a string-array path in the data model.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "maxSelection": {
+      "type": "integer",
+      "description": "Maximum number of items that can be selected. Once reached, unselected cells become disabled. Defaults to 1 (single-select)."
+    },
+    "requiredSelection": {
+      "type": "integer",
+      "description": "Minimum number of selections required to satisfy submission. When met, hasSelection is set to true. Defaults to 1."
+    },
+    "hasSelection": {
+      "type": "object",
+      "description": "Optional. Automatically set to true when the number of selected items reaches requiredSelection, false otherwise. Useful for enabling/disabling a related Button.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "Selectable options rendered as up-to-three-column grid cells. A top-right check indicator is overlaid with a 2px inset and does not occupy content space. Prefer SelectionGrid for short labels and compact content.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Unique value for this option."
+          },
+          "child": {
+            "type": "string",
+            "description": "ID of the child component rendered in this grid cell. Suitable for compact labels or short mixed content."
+          }
+        },
+        "required": [
+          "value",
+          "child"
+        ]
+      }
+    }
+  },
+  "required": [
+    "selection",
+    "items"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SelectionGrid"
+}

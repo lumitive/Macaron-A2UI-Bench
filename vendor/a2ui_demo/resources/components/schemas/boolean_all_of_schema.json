@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "description": "A logic-only component that computes AND across input booleans and writes the result to an output boolean path.",
+  "properties": {
+    "inputs": {
+      "type": "array",
+      "description": "Boolean references to aggregate. Null values are treated as false.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "A relative or absolute path in the data model."
+          },
+          "literalBoolean": {
+            "type": "boolean"
+          }
+        }
+      },
+      "minItems": 1
+    },
+    "output": {
+      "type": "object",
+      "description": "The output boolean reference. `path` is required and receives the AND result.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Absolute or relative data path for aggregated output."
+        },
+        "literalBoolean": {
+          "type": "boolean",
+          "description": "Optional initial value written once before subscriptions settle."
+        }
+      },
+      "required": [
+        "path"
+      ]
+    }
+  },
+  "required": [
+    "inputs",
+    "output"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BooleanAllOf"
+}

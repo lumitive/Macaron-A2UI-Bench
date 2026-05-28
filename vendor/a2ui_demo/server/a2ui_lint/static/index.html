@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A2UI Lint — Validator</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #242734;
+    --border: #2e3142;
+    --text: #e1e4ed;
+    --text2: #8b8fa3;
+    --accent: #6c8cff;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --blue: #60a5fa;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Header */
+  .header {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .header h1 { font-size: 18px; font-weight: 600; white-space: nowrap; }
+  .header select {
+    background: var(--surface2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    min-width: 200px;
+  }
+  .header select option { background: var(--surface2); }
+  .header select optgroup { color: var(--text2); font-style: normal; }
+
+  /* Main grid */
+  .main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    overflow: hidden;
+  }
+  @media (max-width: 860px) {
+    .main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  }
+
+  /* Panels */
+  .panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel:first-child { border-right: 1px solid var(--border); }
+  .panel-header {
+    padding: 10px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .panel-header .title { font-size: 13px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .5px; }
+  .panel-body { flex: 1; overflow: auto; position: relative; }
+
+  /* Editor */
+  .editor-wrap {
+    display: flex;
+    height: 100%;
+    min-height: 0;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .line-numbers {
+    padding: 12px 8px 12px 12px;
+    text-align: right;
+    color: var(--text2);
+    user-select: none;
+    width: 48px;
+    flex-shrink: 0;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    white-space: pre;
+  }
+  .editor-wrap textarea {
+    flex: 1;
+    background: var(--bg);
+    color: var(--text);
+    border: none;
+    padding: 12px;
+    font: inherit;
+    resize: none;
+    outline: none;
+    tab-size: 2;
+    white-space: pre;
+    overflow-wrap: normal;
+    overflow-x: auto;
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .checkbox-group { display: flex; align-items: center; gap: 6px; }
+  .checkbox-group label {
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .checkbox-group input { cursor: pointer; }
+  .toggle-label {
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  button.validate-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  button.validate-btn:hover { opacity: .85; }
+  button.validate-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Results */
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    flex-wrap: wrap;
+  }
+  .badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+  }
+  .badge.pass { background: rgba(52,211,153,.15); color: var(--green); }
+  .badge.fail { background: rgba(248,113,113,.15); color: var(--red); }
+  .count-chip {
+    font-size: 12px;
+    color: var(--text2);
+    background: var(--surface2);
+    padding: 2px 10px;
+    border-radius: 10px;
+  }
+  .count-chip.errors { color: var(--red); }
+  .count-chip.warnings { color: var(--yellow); }
+
+  .diagnostics-list { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+
+  .diag-card {
+    background: var(--surface);
+    border-radius: 8px;
+    border-left: 4px solid var(--text2);
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+  .diag-card.error { border-left-color: var(--red); }
+  .diag-card.warning { border-left-color: var(--yellow); }
+  .diag-card.info { border-left-color: var(--blue); }
+  .diag-card .diag-top { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+  .diag-card .severity-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .diag-card.error .severity-dot { background: var(--red); }
+  .diag-card.warning .severity-dot { background: var(--yellow); }
+  .diag-card.info .severity-dot { background: var(--blue); }
+  .diag-card .code { font-family: monospace; font-size: 11px; color: var(--text2); }
+  .diag-card .message { color: var(--text); }
+  .diag-card .path { font-family: monospace; font-size: 11px; color: var(--accent); margin-top: 4px; }
+  .diag-card .suggestion { font-size: 12px; color: var(--green); margin-top: 4px; }
+
+  .empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--text2);
+    font-size: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  /* Status bar */
+  .statusbar {
+    padding: 8px 24px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 12px;
+    color: var(--text2);
+    flex-wrap: wrap;
+  }
+  .statusbar span { white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <h1>A2UI Lint</h1>
+  <select id="examples">
+    <option value="">Load example...</option>
+  </select>
+</div>
+
+<!-- Main -->
+<div class="main">
+  <!-- Left: Editor -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="title">JSON Input</span>
+      <div class="controls">
+        <div class="checkbox-group">
+          <label><input type="checkbox" data-level="1" checked> L1</label>
+          <label><input type="checkbox" data-level="2" checked> L2</label>
+          <label><input type="checkbox" data-level="3" checked> L3</label>
+          <label><input type="checkbox" data-level="4" checked> L4</label>
+        </div>
+        <label class="toggle-label">
+          <input type="checkbox" id="raw-mode"> Raw LLM
+        </label>
+        <button class="validate-btn" id="validate-btn">Validate</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="editor-wrap">
+        <div class="line-numbers" id="line-numbers">1</div>
+        <textarea id="editor" spellcheck="false" placeholder="Paste A2UI JSON here..."></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Results -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="title">Diagnostics</span>
+    </div>
+    <div class="panel-body" id="results-body">
+      <div class="empty-state">Select an example or paste JSON, then click Validate</div>
+    </div>
+  </div>
+</div>
+
+<!-- Status bar -->
+<div class="statusbar" id="statusbar">
+  <span id="stat-msgs">Messages: —</span>
+  <span id="stat-comps">Components: —</span>
+  <span id="stat-surfaces">Surfaces: —</span>
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const lineNumbers = document.getElementById('line-numbers');
+const validateBtn = document.getElementById('validate-btn');
+const rawModeCheck = document.getElementById('raw-mode');
+const examplesSelect = document.getElementById('examples');
+const resultsBody = document.getElementById('results-body');
+const apiBase = window.location.pathname.replace(/\/$/, '');
+
+function apiUrl(path) {
+  if (!apiBase || apiBase === '/') return path;
+  return `${apiBase}${path}`;
+}
+
+// --- Line numbers ---
+function updateLineNumbers() {
+  const lines = editor.value.split('\n').length;
+  lineNumbers.textContent = Array.from({length: lines}, (_, i) => i + 1).join('\n');
+}
+editor.addEventListener('input', updateLineNumbers);
+editor.addEventListener('scroll', () => { lineNumbers.scrollTop = editor.scrollTop; });
+updateLineNumbers();
+
+// --- Load examples ---
+async function loadExamples() {
+  try {
+    const res = await fetch(apiUrl('/api/examples'));
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${res.status} ${res.statusText}: ${text.slice(0, 120)}`);
+    }
+    const examples = await res.json();
+    const validGroup = document.createElement('optgroup');
+    validGroup.label = 'Valid Examples';
+    const errorGroup = document.createElement('optgroup');
+    errorGroup.label = 'Error Examples';
+    examples.forEach((ex, idx) => {
+      const opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = ex.name;
+      opt.dataset.json = ex.json;
+      opt.dataset.valid = ex.valid;
+      (ex.valid ? validGroup : errorGroup).appendChild(opt);
+    });
+    examplesSelect.appendChild(validGroup);
+    examplesSelect.appendChild(errorGroup);
+  } catch (e) {
+    console.error('Failed to load examples:', e);
+  }
+}
+
+examplesSelect.addEventListener('change', () => {
+  const opt = examplesSelect.selectedOptions[0];
+  if (!opt || !opt.dataset.json) return;
+  editor.value = opt.dataset.json;
+  updateLineNumbers();
+  doValidate();
+});
+
+// --- Validation ---
+function getSelectedLevels() {
+  return Array.from(document.querySelectorAll('[data-level]'))
+    .filter(cb => cb.checked)
+    .map(cb => Number(cb.dataset.level));
+}
+
+async function doValidate() {
+  const text = editor.value.trim();
+  if (!text) return;
+  validateBtn.disabled = true;
+  validateBtn.textContent = '...';
+  try {
+    const res = await fetch(apiUrl('/api/validate'), {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        json_text: text,
+        levels: getSelectedLevels(),
+        raw_mode: rawModeCheck.checked,
+      }),
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      throw new Error(`${res.status} ${res.statusText}: ${text.slice(0, 120)}`);
+    }
+    const data = await res.json();
+    renderResults(data);
+  } catch (e) {
+    resultsBody.innerHTML = `<div class="empty-state" style="color:var(--red)">Request failed: ${e.message}</div>`;
+  } finally {
+    validateBtn.disabled = false;
+    validateBtn.textContent = 'Validate';
+  }
+}
+
+validateBtn.addEventListener('click', doValidate);
+editor.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); doValidate(); }
+  // Tab indentation
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = editor.selectionStart;
+    editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(editor.selectionEnd);
+    editor.selectionStart = editor.selectionEnd = start + 2;
+    updateLineNumbers();
+  }
+});
+
+// Re-validate when levels change
+document.querySelectorAll('[data-level]').forEach(cb => {
+  cb.addEventListener('change', () => { if (editor.value.trim()) doValidate(); });
+});
+
+// --- Render ---
+function renderResults(data) {
+  let html = '<div class="result-header">';
+  html += `<span class="badge ${data.is_valid ? 'pass' : 'fail'}">${data.is_valid ? 'PASS' : 'FAIL'}</span>`;
+  if (data.error_count > 0) html += `<span class="count-chip errors">${data.error_count} error${data.error_count > 1 ? 's' : ''}</span>`;
+  if (data.warning_count > 0) html += `<span class="count-chip warnings">${data.warning_count} warning${data.warning_count > 1 ? 's' : ''}</span>`;
+  const infoCount = (data.diagnostics || []).filter(d => d.severity === 'info').length;
+  if (infoCount > 0) html += `<span class="count-chip">${infoCount} info</span>`;
+  html += '</div>';
+
+  if (data.diagnostics && data.diagnostics.length > 0) {
+    html += '<div class="diagnostics-list">';
+    for (const d of data.diagnostics) {
+      const sev = d.severity || 'info';
+      html += `<div class="diag-card ${sev}">`;
+      html += `<div class="diag-top"><span class="severity-dot"></span><span class="code">${esc(d.code)}</span></div>`;
+      html += `<div class="message">${esc(d.message)}</div>`;
+      if (d.path) html += `<div class="path">${esc(d.path)}</div>`;
+      if (d.suggestion) html += `<div class="suggestion">${esc(d.suggestion)}</div>`;
+      html += '</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="empty-state" style="color:var(--green)">No diagnostics — JSON is valid!</div>';
+  }
+
+  resultsBody.innerHTML = html;
+
+  // Status bar
+  document.getElementById('stat-msgs').textContent = `Messages: ${data.message_count ?? '—'}`;
+  document.getElementById('stat-comps').textContent = `Components: ${data.component_count ?? '—'}`;
+  const surfaces = data.surface_ids;
+  document.getElementById('stat-surfaces').textContent = surfaces && surfaces.length
+    ? `Surfaces: ${surfaces.join(', ')}`
+    : 'Surfaces: —';
+}
+
+function esc(s) {
+  if (!s) return '';
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// --- Init ---
+loadExamples();
+</script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "Text": {
+          "text": {
+            "literalString": "Hello World"
+          },
+          "usageHint": "h1"
+        }
+      }
+    }
+  ]
+]

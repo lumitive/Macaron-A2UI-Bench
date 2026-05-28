@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "distribution": {
+      "type": "string",
+      "description": "How children are aligned on the main axis. ",
+      "enum": [
+        "start",
+        "center",
+        "end",
+        "spaceBetween",
+        "spaceAround",
+        "spaceEvenly"
+      ]
+    },
+    "alignment": {
+      "type": "string",
+      "description": "How children are aligned on the cross axis. ",
+      "enum": [
+        "start",
+        "center",
+        "end",
+        "stretch",
+        "baseline"
+      ]
+    },
+    "children": {
+      "type": "object",
+      "description": "Either an explicit list of widget IDs for the children, or a template with a data binding to the list of children.",
+      "properties": {
+        "explicitList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "componentId": {
+              "type": "string"
+            },
+            "dataBinding": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "componentId",
+            "dataBinding"
+          ]
+        }
+      }
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Column"
+}

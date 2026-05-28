@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "A pure display ordered list for Macaron. Renders items as vertical rows with fixed 16px spacing. Each row shows a red circular order badge with 1-based index.",
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Rows rendered in array order. Each row receives an order badge derived from index + 1.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "child": {
+            "type": "string",
+            "description": "ID of the child component rendered in this row."
+          }
+        },
+        "required": [
+          "child"
+        ]
+      }
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "OrderedDisplayList"
+}

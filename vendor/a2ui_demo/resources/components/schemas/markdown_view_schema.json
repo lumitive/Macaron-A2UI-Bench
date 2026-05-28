@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "object",
+      "description": "Markdown text content to render. Supports common markdown syntax (e.g. headings, emphasis, lists, links, code, blockquotes).",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MarkdownView"
+}

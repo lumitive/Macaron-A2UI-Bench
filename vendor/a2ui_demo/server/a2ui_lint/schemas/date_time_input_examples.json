@@ -1,0 +1,40 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "DateTimeInput": {
+          "value": {
+            "path": "/myDateTime"
+          }
+        }
+      }
+    }
+  ],
+  [
+    {
+      "id": "root",
+      "component": {
+        "DateTimeInput": {
+          "value": {
+            "path": "/myDate"
+          },
+          "enableTime": false
+        }
+      }
+    }
+  ],
+  [
+    {
+      "id": "root",
+      "component": {
+        "DateTimeInput": {
+          "value": {
+            "path": "/myTime"
+          },
+          "enableDate": false
+        }
+      }
+    }
+  ]
+]

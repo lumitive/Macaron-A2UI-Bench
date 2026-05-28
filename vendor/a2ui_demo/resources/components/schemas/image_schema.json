@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "object",
+      "description": "Network URL or asset path for the image.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "size": {
+      "type": "string",
+      "description": "Image display size. \"small\" (40x40), \"medium\" (80x80), \"large\" (120x120), \"full\" (fills parent width, 1:1 ratio). Defaults to \"medium\".",
+      "enum": [
+        "small",
+        "medium",
+        "large",
+        "full"
+      ]
+    }
+  },
+  "required": [
+    "url"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Image"
+}

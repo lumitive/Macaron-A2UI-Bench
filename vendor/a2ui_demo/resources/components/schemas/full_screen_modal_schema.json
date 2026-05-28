@@ -1,0 +1,19 @@
+{
+  "type": "object",
+  "properties": {
+    "entryPointChild": {
+      "type": "string",
+      "description": "The widget that opens the full-screen modal."
+    },
+    "contentChild": {
+      "type": "string",
+      "description": "The widget to render inside the full-screen modal."
+    }
+  },
+  "required": [
+    "entryPointChild",
+    "contentChild"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FullScreenModal"
+}

@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "object",
+      "description": "The selected date and/or time.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "enableDate": {
+      "type": "boolean"
+    },
+    "enableTime": {
+      "type": "boolean"
+    },
+    "firstDate": {
+      "type": "string",
+      "description": "The earliest selectable date (YYYY-MM-DD). Defaults to -9999-01-01."
+    },
+    "lastDate": {
+      "type": "string",
+      "description": "The latest selectable date (YYYY-MM-DD). Defaults to 9999-12-31."
+    }
+  },
+  "required": [
+    "value"
+  ]
+}

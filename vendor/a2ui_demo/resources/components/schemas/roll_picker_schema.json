@@ -1,0 +1,65 @@
+{
+  "type": "object",
+  "description": "A slot-machine style picker with 1-3 columns. Each column defaults to its title and writes selected display values back to data model when scrolling settles.",
+  "properties": {
+    "columns": {
+      "type": "array",
+      "description": "Column data. Supports 1 to 3 columns at runtime; extra columns are ignored.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Column title shown in default state."
+          },
+          "items": {
+            "type": "array",
+            "description": "Selectable items of this column.",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "title",
+          "items"
+        ]
+      }
+    },
+    "selection": {
+      "type": "object",
+      "description": "Display values of each column, one entry per rendered column. Default value of a column is its title.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "hasCustomSelection": {
+      "type": "object",
+      "description": "Optional boolean reference. True when at least one column is not on default title.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "columns",
+    "selection"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "RollPicker"
+}

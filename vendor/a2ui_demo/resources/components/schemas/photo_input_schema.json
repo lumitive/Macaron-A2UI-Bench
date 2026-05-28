@@ -1,0 +1,62 @@
+{
+  "type": "object",
+  "properties": {
+    "value": {
+      "type": "object",
+      "description": "Uploaded stable image URL used for action submission.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "hasValue": {
+      "type": "object",
+      "description": "Optional output boolean. True after upload succeeds; false while uploading, canceled, or failed.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "isUploading": {
+      "type": "object",
+      "description": "Optional output boolean. True while upload is in progress.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "placeholder": {
+      "type": "object",
+      "description": "Optional placeholder text shown in empty state.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "value"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PhotoInput"
+}

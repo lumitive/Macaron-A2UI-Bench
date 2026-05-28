@@ -1,0 +1,14 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "Icon": {
+          "name": {
+            "literalString": "add"
+          }
+        }
+      }
+    }
+  ]
+]

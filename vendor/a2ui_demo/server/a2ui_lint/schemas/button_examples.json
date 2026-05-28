@@ -1,0 +1,83 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "Button": {
+          "child": "text",
+          "action": {
+            "name": "button_pressed"
+          }
+        }
+      }
+    },
+    {
+      "id": "text",
+      "component": {
+        "Text": {
+          "text": {
+            "literalString": "Hello World"
+          }
+        }
+      }
+    }
+  ],
+  [
+    {
+      "id": "root",
+      "component": {
+        "Column": {
+          "children": {
+            "explicitList": [
+              "primaryButton",
+              "secondaryButton"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": "primaryButton",
+      "component": {
+        "Button": {
+          "child": "primaryText",
+          "primary": true,
+          "action": {
+            "name": "primary_pressed"
+          }
+        }
+      }
+    },
+    {
+      "id": "secondaryButton",
+      "component": {
+        "Button": {
+          "child": "secondaryText",
+          "action": {
+            "name": "secondary_pressed"
+          }
+        }
+      }
+    },
+    {
+      "id": "primaryText",
+      "component": {
+        "Text": {
+          "text": {
+            "literalString": "Primary Button"
+          }
+        }
+      }
+    },
+    {
+      "id": "secondaryText",
+      "component": {
+        "Text": {
+          "text": {
+            "literalString": "Secondary Button"
+          }
+        }
+      }
+    }
+  ]
+]

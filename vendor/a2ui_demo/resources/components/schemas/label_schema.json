@@ -1,0 +1,47 @@
+{
+  "type": "object",
+  "properties": {
+    "text": {
+      "type": "object",
+      "description": "The text content to display.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "color": {
+      "type": "string",
+      "description": "The color level of the label text. Defaults to \"label\" (primary text color).",
+      "enum": [
+        "label",
+        "secondary",
+        "tertiary"
+      ]
+    },
+    "variant": {
+      "type": "string",
+      "description": "The typographic variant. Defaults to \"body\" (Noto Serif, regular, 16px). Each variant defines a fixed combination of font family, weight, size, and line height.",
+      "enum": [
+        "title",
+        "body",
+        "bodySemibold",
+        "bodySans",
+        "bodySansSemibold",
+        "subheadline",
+        "subheadlineSemibold",
+        "caption",
+        "captionSemibold"
+      ]
+    }
+  },
+  "required": [
+    "text"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Label"
+}

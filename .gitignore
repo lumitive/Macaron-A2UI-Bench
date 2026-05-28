@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+.env
+.venv/
+render/node_modules/
+render/dist/
+render/output/
+render/vendor/**/node_modules/
+vendor/**/node_modules/
+results/
+visual_compare_*/
+tmp_visual_*/
+_tmp_visual_*/
+screenshots/

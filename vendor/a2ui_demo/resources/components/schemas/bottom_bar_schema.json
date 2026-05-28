@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "child": {
+      "type": "string",
+      "description": "The widget to anchor to the bottom edge."
+    }
+  },
+  "required": [
+    "child"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "BottomBar"
+}

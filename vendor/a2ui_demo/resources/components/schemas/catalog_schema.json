@@ -1,0 +1,805 @@
+{
+  "type": "object",
+  "title": "A2UI Catalog Description Schema",
+  "description": "A schema for a custom Catalog Description including A2UI components and styles.",
+  "properties": {
+    "components": {
+      "type": "object",
+      "title": "A2UI Components",
+      "description": "A schema that defines a catalog of A2UI components. Each key is a component name, and each value is the JSON schema for that component's properties.",
+      "properties": {
+        "AudioPlayer": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "object",
+              "description": "The URL of the audio to play.",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "url"
+          ]
+        },
+        "Button": {
+          "type": "object",
+          "properties": {
+            "child": {
+              "type": "string",
+              "description": "The ID of a child widget. This should always be set, e.g. to the ID of a `Text` widget."
+            },
+            "action": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "context": {
+                  "type": "array",
+                  "description": "A list of name-value pairs to be sent with the action to include data associated with the action, e.g. values that are submitted.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "description": "A path in the data model which should be bound to an input element, e.g. a string reference for a text field, or number reference for a slider."
+                          },
+                          "literalString": {
+                            "type": "string",
+                            "description": "A literal string relevant to the action"
+                          },
+                          "literalNumber": {
+                            "type": "number",
+                            "description": "A literal number relevant to the action"
+                          },
+                          "literalBoolean": {
+                            "type": "boolean",
+                            "description": "A literal boolean relevant to the action"
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "value"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "name"
+              ]
+            },
+            "primary": {
+              "type": "boolean",
+              "description": "Whether the button invokes a primary action."
+            }
+          },
+          "required": [
+            "child",
+            "action"
+          ]
+        },
+        "Card": {
+          "type": "object",
+          "properties": {
+            "child": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "child"
+          ]
+        },
+        "CheckBox": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "value": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalBoolean": {
+                  "type": "boolean"
+                }
+              }
+            }
+          },
+          "required": [
+            "label",
+            "value"
+          ]
+        },
+        "Column": {
+          "type": "object",
+          "properties": {
+            "distribution": {
+              "type": "string",
+              "description": "How children are aligned on the main axis. ",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "spaceBetween",
+                "spaceAround",
+                "spaceEvenly"
+              ]
+            },
+            "alignment": {
+              "type": "string",
+              "description": "How children are aligned on the cross axis. ",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "stretch",
+                "baseline"
+              ]
+            },
+            "children": {
+              "type": "object",
+              "description": "Either an explicit list of widget IDs for the children, or a template with a data binding to the list of children.",
+              "properties": {
+                "explicitList": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "template": {
+                  "type": "object",
+                  "properties": {
+                    "componentId": {
+                      "type": "string"
+                    },
+                    "dataBinding": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "componentId",
+                    "dataBinding"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "DateTimeInput": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "description": "The selected date and/or time.",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "enableDate": {
+              "type": "boolean"
+            },
+            "enableTime": {
+              "type": "boolean"
+            },
+            "firstDate": {
+              "type": "string",
+              "description": "The earliest selectable date (YYYY-MM-DD). Defaults to -9999-01-01."
+            },
+            "lastDate": {
+              "type": "string",
+              "description": "The latest selectable date (YYYY-MM-DD). Defaults to 9999-12-31."
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "Divider": {
+          "type": "object",
+          "properties": {
+            "axis": {
+              "type": "string",
+              "enum": [
+                "horizontal",
+                "vertical"
+              ]
+            }
+          }
+        },
+        "Icon": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "object",
+              "description": "The name of the icon to display. This can be a literal string ('literalString') or a reference to a value in the data model ('path', e.g. '/icon/name').",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model.",
+                  "enum": [
+                    "accountCircle",
+                    "add",
+                    "arrowBack",
+                    "arrowForward",
+                    "attachFile",
+                    "calendarToday",
+                    "call",
+                    "camera",
+                    "check",
+                    "close",
+                    "delete",
+                    "download",
+                    "edit",
+                    "error",
+                    "event",
+                    "favorite",
+                    "favoriteOff",
+                    "folder",
+                    "help",
+                    "home",
+                    "info",
+                    "locationOn",
+                    "lock",
+                    "lockOpen",
+                    "mail",
+                    "menu",
+                    "moreHoriz",
+                    "moreVert",
+                    "notifications",
+                    "notificationsOff",
+                    "payment",
+                    "person",
+                    "phone",
+                    "photo",
+                    "print",
+                    "refresh",
+                    "search",
+                    "send",
+                    "settings",
+                    "share",
+                    "shoppingCart",
+                    "star",
+                    "starHalf",
+                    "starOff",
+                    "upload",
+                    "visibility",
+                    "visibilityOff",
+                    "warning"
+                  ]
+                },
+                "literalString": {
+                  "type": "string",
+                  "enum": [
+                    "accountCircle",
+                    "add",
+                    "arrowBack",
+                    "arrowForward",
+                    "attachFile",
+                    "calendarToday",
+                    "call",
+                    "camera",
+                    "check",
+                    "close",
+                    "delete",
+                    "download",
+                    "edit",
+                    "error",
+                    "event",
+                    "favorite",
+                    "favoriteOff",
+                    "folder",
+                    "help",
+                    "home",
+                    "info",
+                    "locationOn",
+                    "lock",
+                    "lockOpen",
+                    "mail",
+                    "menu",
+                    "moreHoriz",
+                    "moreVert",
+                    "notifications",
+                    "notificationsOff",
+                    "payment",
+                    "person",
+                    "phone",
+                    "photo",
+                    "print",
+                    "refresh",
+                    "search",
+                    "send",
+                    "settings",
+                    "share",
+                    "shoppingCart",
+                    "star",
+                    "starHalf",
+                    "starOff",
+                    "upload",
+                    "visibility",
+                    "visibilityOff",
+                    "warning"
+                  ]
+                }
+              }
+            }
+          },
+          "required": [
+            "name"
+          ]
+        },
+        "Image": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "object",
+              "description": "Asset path (e.g. assets/...) or network URL (e.g. https://...)",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "fit": {
+              "type": "string",
+              "description": "How the image should be inscribed into the box.",
+              "enum": [
+                "fill",
+                "contain",
+                "cover",
+                "fitWidth",
+                "fitHeight",
+                "none",
+                "scaleDown"
+              ]
+            },
+            "usageHint": {
+              "type": "string",
+              "description": "A hint for the image size and style. One of:\n      - icon: Small square icon.\n      - avatar: Circular avatar image.\n      - smallFeature: Small feature image.\n      - mediumFeature: Medium feature image.\n      - largeFeature: Large feature image.\n      - header: Full-width, full bleed, header image.",
+              "enum": [
+                "icon",
+                "avatar",
+                "smallFeature",
+                "mediumFeature",
+                "largeFeature",
+                "header"
+              ]
+            }
+          }
+        },
+        "List": {
+          "type": "object",
+          "properties": {
+            "children": {
+              "type": "object",
+              "properties": {
+                "explicitList": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "template": {
+                  "type": "object",
+                  "properties": {
+                    "componentId": {
+                      "type": "string"
+                    },
+                    "dataBinding": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "componentId",
+                    "dataBinding"
+                  ]
+                }
+              }
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "vertical",
+                "horizontal"
+              ]
+            },
+            "alignment": {
+              "type": "string",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "stretch"
+              ]
+            }
+          },
+          "required": [
+            "children"
+          ]
+        },
+        "Modal": {
+          "type": "object",
+          "properties": {
+            "entryPointChild": {
+              "type": "string",
+              "description": "The widget that opens the modal."
+            },
+            "contentChild": {
+              "type": "string",
+              "description": "The widget to display in the modal."
+            }
+          },
+          "required": [
+            "entryPointChild",
+            "contentChild"
+          ]
+        },
+        "MultipleChoice": {
+          "type": "object",
+          "properties": {
+            "selections": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalArray": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "options": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "label": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "description": "A relative or absolute path in the data model."
+                      },
+                      "literalString": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "label",
+                  "value"
+                ]
+              }
+            },
+            "maxAllowedSelections": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "selections",
+            "options"
+          ]
+        },
+        "Row": {
+          "type": "object",
+          "properties": {
+            "children": {
+              "type": "object",
+              "description": "Either an explicit list of widget IDs for the children, or a template with a data binding to the list of children.",
+              "properties": {
+                "explicitList": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "template": {
+                  "type": "object",
+                  "properties": {
+                    "componentId": {
+                      "type": "string"
+                    },
+                    "dataBinding": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "componentId",
+                    "dataBinding"
+                  ]
+                }
+              }
+            },
+            "distribution": {
+              "type": "string",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "spaceBetween",
+                "spaceAround",
+                "spaceEvenly"
+              ]
+            },
+            "alignment": {
+              "type": "string",
+              "enum": [
+                "start",
+                "center",
+                "end",
+                "stretch",
+                "baseline"
+              ]
+            }
+          },
+          "required": [
+            "children"
+          ]
+        },
+        "Slider": {
+          "type": "object",
+          "properties": {
+            "value": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalNumber": {
+                  "type": "number"
+                }
+              }
+            },
+            "minValue": {
+              "type": "number"
+            },
+            "maxValue": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "value"
+          ]
+        },
+        "Tabs": {
+          "type": "object",
+          "properties": {
+            "tabItems": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": {
+                    "type": "object",
+                    "properties": {
+                      "path": {
+                        "type": "string",
+                        "description": "A relative or absolute path in the data model."
+                      },
+                      "literalString": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "child": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "title",
+                  "child"
+                ]
+              }
+            }
+          },
+          "required": [
+            "tabItems"
+          ]
+        },
+        "Text": {
+          "type": "object",
+          "properties": {
+            "text": {
+              "type": "object",
+              "description": "While simple Markdown is supported (without HTML or image references), utilizing dedicated UI components is generally preferred for a richer and more structured presentation.",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "usageHint": {
+              "type": "string",
+              "description": "A usage hint for the base text style.",
+              "enum": [
+                "h1",
+                "h2",
+                "h3",
+                "h4",
+                "h5",
+                "caption",
+                "body"
+              ]
+            }
+          },
+          "required": [
+            "text"
+          ]
+        },
+        "TextField": {
+          "type": "object",
+          "description": "A text input field.",
+          "properties": {
+            "text": {
+              "type": "object",
+              "description": "The initial value of the text field.",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "label": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            },
+            "textFieldType": {
+              "type": "string",
+              "enum": [
+                "shortText",
+                "longText",
+                "number",
+                "date",
+                "obscured"
+              ]
+            },
+            "validationRegexp": {
+              "type": "string"
+            },
+            "onSubmittedAction": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "context": {
+                  "type": "array",
+                  "description": "A list of name-value pairs to be sent with the action to include data associated with the action, e.g. values that are submitted.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string"
+                      },
+                      "value": {
+                        "type": "object",
+                        "properties": {
+                          "path": {
+                            "type": "string",
+                            "description": "A path in the data model which should be bound to an input element, e.g. a string reference for a text field, or number reference for a slider."
+                          },
+                          "literalString": {
+                            "type": "string",
+                            "description": "A literal string relevant to the action"
+                          },
+                          "literalNumber": {
+                            "type": "number",
+                            "description": "A literal number relevant to the action"
+                          },
+                          "literalBoolean": {
+                            "type": "boolean",
+                            "description": "A literal boolean relevant to the action"
+                          }
+                        }
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "value"
+                    ]
+                  }
+                }
+              },
+              "required": [
+                "name"
+              ]
+            }
+          }
+        },
+        "Video": {
+          "type": "object",
+          "properties": {
+            "url": {
+              "type": "object",
+              "description": "The URL of the video to play.",
+              "properties": {
+                "path": {
+                  "type": "string",
+                  "description": "A relative or absolute path in the data model."
+                },
+                "literalString": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "required": [
+            "url"
+          ]
+        }
+      }
+    },
+    "styles": {
+      "type": "object",
+      "title": "A2UI Styles",
+      "description": "A schema that defines a catalog of A2UI styles. Each key is a style name, and each value is the JSON schema for that style's properties.",
+      "properties": {}
+    }
+  },
+  "required": [
+    "components",
+    "styles"
+  ]
+}

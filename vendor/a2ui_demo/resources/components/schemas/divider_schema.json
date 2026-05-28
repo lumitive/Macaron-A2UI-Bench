@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "axis": {
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ]
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Divider"
+}

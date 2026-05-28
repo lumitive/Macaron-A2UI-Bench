@@ -1,0 +1,70 @@
+{
+  "type": "object",
+  "description": "A vertical, list-style selector for Macaron. Best for options with longer text or richer row content. Each row shows a check indicator plus custom child content.",
+  "properties": {
+    "selection": {
+      "type": "object",
+      "description": "The currently selected option values, bound to a string-array path in the data model.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "maxSelection": {
+      "type": "integer",
+      "description": "Maximum number of items that can be selected. Once reached, unselected rows become disabled. Defaults to 1 (single-select)."
+    },
+    "requiredSelection": {
+      "type": "integer",
+      "description": "Minimum number of selections required to satisfy submission. When met, hasSelection is set to true. Defaults to 1."
+    },
+    "hasSelection": {
+      "type": "object",
+      "description": "Optional. Automatically set to true when the number of selected items reaches requiredSelection, false otherwise. Useful for enabling/disabling a related Button.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "Selectable options rendered as stacked rows. Prefer SelectionList for reading-heavy options.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "Unique value for this option."
+          },
+          "child": {
+            "type": "string",
+            "description": "ID of the child component rendered in this row. Suitable for longer labels or mixed text layouts."
+          }
+        },
+        "required": [
+          "value",
+          "child"
+        ]
+      }
+    }
+  },
+  "required": [
+    "selection",
+    "items"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SelectionList"
+}

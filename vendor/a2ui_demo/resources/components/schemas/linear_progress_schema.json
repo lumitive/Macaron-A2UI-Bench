@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "progress": {
+      "type": "object",
+      "description": "Progress ratio from 0 to 1. Runtime clamps out-of-range values.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    }
+  },
+  "required": [
+    "progress"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LinearProgress"
+}

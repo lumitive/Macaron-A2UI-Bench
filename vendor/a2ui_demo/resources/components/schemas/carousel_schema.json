@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "description": "A Macaron-style horizontal pager container. Each child page uses a fixed width of 0.8 parent width with an 8px horizontal gap.",
+  "properties": {
+    "children": {
+      "type": "object",
+      "description": "Child component ids for carousel pages. V1 supports explicitList only.",
+      "properties": {
+        "explicitList": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "ID of the child component rendered as a page."
+          }
+        }
+      },
+      "required": [
+        "explicitList"
+      ]
+    }
+  },
+  "required": [
+    "children"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Carousel"
+}

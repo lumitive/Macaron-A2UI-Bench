@@ -1,0 +1,18 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "CheckBox": {
+          "label": {
+            "literalString": "Check me"
+          },
+          "value": {
+            "path": "/myValue",
+            "literalBoolean": true
+          }
+        }
+      }
+    }
+  ]
+]

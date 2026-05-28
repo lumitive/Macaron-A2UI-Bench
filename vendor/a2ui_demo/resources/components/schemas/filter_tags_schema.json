@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "tags": {
+      "type": "object",
+      "description": "Array source for filter tags. Supports either a data-model path or a literal array of strings.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "tags"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "FilterTags"
+}

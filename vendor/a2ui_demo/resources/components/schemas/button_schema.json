@@ -1,0 +1,85 @@
+{
+  "type": "object",
+  "properties": {
+    "child": {
+      "type": "string",
+      "description": "The ID of a child widget. This should always be set, e.g. to the ID of a Label widget."
+    },
+    "action": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "context": {
+          "type": "array",
+          "description": "A list of name-value pairs to be sent with the action to include data associated with the action, e.g. values that are submitted.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "object",
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "A path in the data model which should be bound to an input element, e.g. a string reference for a text field, or number reference for a slider."
+                  },
+                  "literalString": {
+                    "type": "string",
+                    "description": "A literal string relevant to the action"
+                  },
+                  "literalNumber": {
+                    "type": "number",
+                    "description": "A literal number relevant to the action"
+                  },
+                  "literalBoolean": {
+                    "type": "boolean",
+                    "description": "A literal boolean relevant to the action"
+                  }
+                }
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ]
+          }
+        }
+      },
+      "required": [
+        "name"
+      ]
+    },
+    "style": {
+      "type": "string",
+      "description": "The visual style of the button. \"primary\" renders a gradient background, \"secondary\" renders a white outlined button, \"plain\" renders a text-only button with no background. Defaults to \"primary\".",
+      "enum": [
+        "primary",
+        "secondary",
+        "plain"
+      ]
+    },
+    "enabled": {
+      "type": "object",
+      "description": "Whether the button is enabled. Binds to a boolean in the data model. Defaults to true when omitted.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "child",
+    "action"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Button"
+}

@@ -1,0 +1,14 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "Video": {
+          "url": {
+            "literalString": "https://example.com/video.mp4"
+          }
+        }
+      }
+    }
+  ]
+]

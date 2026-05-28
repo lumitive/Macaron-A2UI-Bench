@@ -1,0 +1,63 @@
+{
+  "type": "object",
+  "properties": {
+    "latitude": {
+      "type": "object",
+      "description": "Latitude of the marker center. Must be finite. Values are normalized into [-90, 90].",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    },
+    "longitude": {
+      "type": "object",
+      "description": "Longitude of the marker center. Must be finite. Values are normalized into [-180, 180].",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    },
+    "zoom": {
+      "type": "object",
+      "description": "Initial map zoom. Optional. Defaults to 14 and clamps to [1, 21].",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalNumber": {
+          "type": "number"
+        }
+      }
+    },
+    "tileUrlTemplate": {
+      "type": "object",
+      "description": "Deprecated compatibility field from OSM mode. Ignored in Google Maps mode.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "latitude",
+    "longitude"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Map"
+}

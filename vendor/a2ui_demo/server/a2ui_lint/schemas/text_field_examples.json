@@ -1,0 +1,33 @@
+[
+  [
+    {
+      "id": "root",
+      "component": {
+        "TextField": {
+          "text": {
+            "literalString": "Hello World"
+          },
+          "label": {
+            "literalString": "Greeting"
+          }
+        }
+      }
+    }
+  ],
+  [
+    {
+      "id": "root",
+      "component": {
+        "TextField": {
+          "text": {
+            "literalString": "password123"
+          },
+          "label": {
+            "literalString": "Password"
+          },
+          "textFieldType": "obscured"
+        }
+      }
+    }
+  ]
+]

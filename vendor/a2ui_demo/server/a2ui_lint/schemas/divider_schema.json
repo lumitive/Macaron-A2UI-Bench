@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "axis": {
+      "type": "string",
+      "enum": [
+        "horizontal",
+        "vertical"
+      ]
+    }
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "type": "object",
+  "properties": {
+    "segments": {
+      "type": "object",
+      "description": "Array source for tag-style text segments. Supports either a data-model path or a literal array.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model pointing to an array of `{ text, style? }` objects."
+        },
+        "literalArray": {
+          "type": "array",
+          "description": "Literal array of text segments rendered in order and joined with ` · `.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string",
+                "description": "Text content for this segment."
+              },
+              "style": {
+                "type": "string",
+                "description": "Optional color style for this segment. Defaults to `default`.",
+                "enum": [
+                  "default",
+                  "secondary",
+                  "tertiary",
+                  "highlight"
+                ]
+              }
+            },
+            "required": [
+              "text"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "segments"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "TagText"
+}

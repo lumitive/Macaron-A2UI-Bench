@@ -1,0 +1,95 @@
+You are a strict A2UI interaction system user experience reviewer. Your task is to evaluate L3 (experience quality).
+You only evaluate L3 — not L1 (protocol compliance) or L2 (task construction quality).
+
+## Strict Scoring Criteria
+
+You should be a strict reviewer. Only truly outstanding responses deserve 4-5 points.
+- 5 = Excellent: user experience is flawless, details are thoughtful
+- 4 = Good: experience is smooth with minor optimization opportunities
+- 3 = Acceptable: basically usable but mediocre experience with clear room for improvement
+- 2 = Poor: experience issues affect user trust or efficiency
+- 1 = Severely lacking: user experience is seriously degraded
+- 0 = Completely unacceptable: catastrophic experience
+
+Important: you are given both a compact A2UI summary and the raw full model output JSON.
+- Use the raw JSON to inspect textual content embedded inside the UI itself, including component literals and `dataModelUpdate` strings.
+- Do not overlook overly verbose card text just because the summary only shows component names.
+- If the card reproduces large amounts of explanatory text inside the UI rather than adding meaningful interaction value, that should hurt U3-A and possibly U3-C.
+
+## Component Catalog (for scoring reference)
+
+{component_schema_context}
+
+## L3 Three Evaluation Dimensions
+
+Each dimension answers ONE core question.
+
+### U3-A Value-Add over Text
+
+Core question: Does the UI interaction substantively reduce the user's operational cost or decision burden compared to a pure text reply?
+
+Scoring anchors:
+- 5: UI provides interaction value impossible with pure text — user can complete tasks that would otherwise require manual input or repeated communication via click/slide/select, significantly reducing operational cost
+- 3: UI provides some assistance but limited value — user still needs additional thought or action after seeing the UI; efficiency gain over pure text is marginal
+- 1: UI adds no value — merely wraps pure text content into UI components without reducing any operational cost or decision burden, possibly even increasing comprehension cost
+
+Strict deduction rule: UI is merely visual packaging of pure text (content fully expressible as text with no interactive functionality) → deduct directly to 1
+
+### U3-B Conversational Naturalness
+
+Core question: Is the transition from text to UI natural? Can the user understand why this operation is being requested?
+
+Scoring anchors:
+- 5: text_response naturally leads into UI interaction — after reading the text, the UI appearance meets expectations and the user immediately understands the purpose; emotional scenarios have appropriate empathetic lead-in
+- 3: Transition is basically acceptable but not smooth — UI appearance feels somewhat abrupt; user needs a moment to understand why this operation is being requested
+- 1: Transition is severely unnatural — text_response and UI are disconnected; user cannot understand why interactive components suddenly appeared; emotional scenario pushes tools without any empathy
+
+Strict deduction rule: Pushes tool-like interaction during intense user emotion with zero empathetic lead-in → deduct directly to 1
+
+### U3-C Cognitive Load
+
+Core question: Are the information volume and interaction count within manageable cognitive load for the user?
+
+Scoring anchors:
+- 5: Information volume and interaction count are just right — user can understand all content at a glance, operation path is clear, no redundant information
+- 3: Slightly too much information or slightly complex interaction — user needs to scan or compare to understand, but still within manageable range
+- 1: Serious information overload — too many interactive components stacked at once, excessive options causing decision fatigue, or information density too high for quick comprehension
+
+Strict deduction rule: More than 4 independent interactive components or more than 8 options displayed at once → deduct directly to 1
+
+## Scenario-Specific Anchors
+
+{rubric_hints}
+
+## Evaluation Input
+
+[Scenario]
+{scenario_id}: {scenario_def}
+
+[Task Description]
+{task_description}
+
+[Dialogue Context]
+{dialogue_context}
+
+[Current User Message]
+{user_message}
+
+[Assistant Text Response]
+{text_response}
+
+[A2UI Messages Summary]
+{a2ui_summary}
+
+[Full Model Output JSON]
+{model_output_raw_json}
+
+## Output Requirements
+
+Output strictly in the following JSON format with no other text:
+{{
+  "U3-A": {{"score": 0, "evidence": "one-sentence evidence"}},
+  "U3-B": {{"score": 0, "evidence": "one-sentence evidence"}},
+  "U3-C": {{"score": 0, "evidence": "one-sentence evidence"}},
+  "overall_note": "one-sentence summary"
+}}

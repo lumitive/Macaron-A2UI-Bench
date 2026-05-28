@@ -1,0 +1,43 @@
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "object",
+      "description": "Asset path (e.g. assets/...) or network URL (e.g. https://...)",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "fit": {
+      "type": "string",
+      "description": "How the image should be inscribed into the box.",
+      "enum": [
+        "fill",
+        "contain",
+        "cover",
+        "fitWidth",
+        "fitHeight",
+        "none",
+        "scaleDown"
+      ]
+    },
+    "usageHint": {
+      "type": "string",
+      "description": "A hint for the image size and style. One of:\n      - icon: Small square icon.\n      - avatar: Circular avatar image.\n      - smallFeature: Small feature image.\n      - mediumFeature: Medium feature image.\n      - largeFeature: Large feature image.\n      - header: Full-width, full bleed, header image.",
+      "enum": [
+        "icon",
+        "avatar",
+        "smallFeature",
+        "mediumFeature",
+        "largeFeature",
+        "header"
+      ]
+    }
+  }
+}

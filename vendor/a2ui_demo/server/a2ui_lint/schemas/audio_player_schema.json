@@ -1,0 +1,21 @@
+{
+  "type": "object",
+  "properties": {
+    "url": {
+      "type": "object",
+      "description": "The URL of the audio to play.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "required": [
+    "url"
+  ]
+}

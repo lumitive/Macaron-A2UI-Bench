@@ -1,0 +1,101 @@
+{
+  "input_dir": "./data/source",
+  "output_dir": "./data/eval_300",
+  "seed": 42,
+  "per_difficulty": 100,
+  "per_source_quota": 25,
+  "sources": [
+    "annomi",
+    "esconv",
+    "multiwoz",
+    "sgd"
+  ],
+  "difficulties": [
+    "atomic",
+    "depth",
+    "width"
+  ],
+  "files": {
+    "annomi": {
+      "atomic": {
+        "available": 50,
+        "selected": 25,
+        "positive": 20,
+        "negative": 5
+      },
+      "depth": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      },
+      "width": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      }
+    },
+    "esconv": {
+      "atomic": {
+        "available": 50,
+        "selected": 25,
+        "positive": 19,
+        "negative": 6
+      },
+      "depth": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      },
+      "width": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      }
+    },
+    "multiwoz": {
+      "atomic": {
+        "available": 50,
+        "selected": 25,
+        "positive": 21,
+        "negative": 4
+      },
+      "depth": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      },
+      "width": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      }
+    },
+    "sgd": {
+      "atomic": {
+        "available": 50,
+        "selected": 25,
+        "positive": 18,
+        "negative": 7
+      },
+      "depth": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      },
+      "width": {
+        "available": 50,
+        "selected": 25,
+        "positive": 25,
+        "negative": 0
+      }
+    }
+  },
+  "total_selected": 300
+}

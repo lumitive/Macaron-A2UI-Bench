@@ -1,0 +1,54 @@
+{
+  "type": "object",
+  "properties": {
+    "selections": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "A relative or absolute path in the data model."
+              },
+              "literalString": {
+                "type": "string"
+              }
+            }
+          },
+          "value": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "value"
+        ]
+      }
+    },
+    "maxAllowedSelections": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "selections",
+    "options"
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "type": "object",
+  "properties": {
+    "children": {
+      "type": "object",
+      "properties": {
+        "explicitList": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "template": {
+          "type": "object",
+          "properties": {
+            "componentId": {
+              "type": "string"
+            },
+            "dataBinding": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "componentId",
+            "dataBinding"
+          ]
+        }
+      }
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "vertical",
+        "horizontal"
+      ]
+    },
+    "alignment": {
+      "type": "string",
+      "enum": [
+        "start",
+        "center",
+        "end",
+        "stretch"
+      ]
+    }
+  },
+  "required": [
+    "children"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "entryPointChild": {
+      "type": "string",
+      "description": "The widget that opens the modal."
+    },
+    "contentChild": {
+      "type": "string",
+      "description": "The widget to display in the modal."
+    }
+  },
+  "required": [
+    "entryPointChild",
+    "contentChild"
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "type": "object",
+  "properties": {
+    "tabItems": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string",
+                "description": "A relative or absolute path in the data model."
+              },
+              "literalString": {
+                "type": "string"
+              }
+            }
+          },
+          "child": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "child"
+        ]
+      }
+    }
+  },
+  "required": [
+    "tabItems"
+  ]
+}

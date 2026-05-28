@@ -1,0 +1,61 @@
+{
+  "type": "object",
+  "description": "A button-like single selector for Macaron. Before selection, it shows a placeholder. On tap, it opens an anchored dropdown menu with plain-string options.",
+  "properties": {
+    "selection": {
+      "type": "object",
+      "description": "A string-array reference used as single-select storage. Runtime uses the first valid value for rendering.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalArray": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "Available options as plain strings. Item display and stored value are the same.",
+      "items": {
+        "type": "string"
+      }
+    },
+    "placeholder": {
+      "type": "object",
+      "description": "Optional placeholder text shown before valid selection. Defaults to \"Select location\".",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalString": {
+          "type": "string"
+        }
+      }
+    },
+    "hasSelection": {
+      "type": "object",
+      "description": "Optional boolean reference auto-updated by valid selection state.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "A relative or absolute path in the data model."
+        },
+        "literalBoolean": {
+          "type": "boolean"
+        }
+      }
+    }
+  },
+  "required": [
+    "selection",
+    "items"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DropdownSelection"
+}
