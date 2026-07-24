@@ -20,6 +20,7 @@ _EVAL_ROOT = Path(__file__).resolve().parent
 if str(_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(_EVAL_ROOT))
 
+import evaluate_api_model as eval_api  # noqa: E402
 import visual_eval  # noqa: E402
 
 
@@ -37,8 +38,20 @@ def _parse_args() -> argparse.Namespace:
         description="Run visual comparison across multiple result folders on their common eligible tasks."
     )
     parser.add_argument("--results-dir", type=Path, default=visual_eval.DEFAULT_RESULTS_DIR)
+    parser.add_argument(
+        "--protocol-version",
+        choices=["0.8", "0.9.1"],
+        default=visual_eval.DEFAULT_PROTOCOL_VERSION,
+        help="A2UI protocol stack (default 0.8 until cutover). Selects render_check, "
+        "default render URL, results subdir, and VLM copy.",
+    )
     parser.add_argument("--model-slugs", nargs="+", default=DEFAULT_MODEL_SLUGS)
-    parser.add_argument("--render-url", type=str, default=visual_eval.DEFAULT_RENDER_URL)
+    parser.add_argument(
+        "--render-url",
+        type=str,
+        default=None,
+        help="Renderer base URL (default: 0.8→5173, 0.9.1→5174).",
+    )
     parser.add_argument("--vlm-model", type=str, default=visual_eval.DEFAULT_VLM_MODEL)
     parser.add_argument("--vlm-base-url", type=str, default=default_base_url)
     parser.add_argument("--judge-api-key", type=str, default=None)
@@ -109,6 +122,7 @@ def _build_summary(
     vlm_model: str,
     render_url: str,
     eligible_counts: dict[str, int],
+    protocol_version: str,
 ) -> dict[str, Any]:
     per_model: dict[str, dict[str, Any]] = {}
     rows_by_model: dict[str, list[dict[str, Any]]] = defaultdict(list)
@@ -176,6 +190,7 @@ def _build_summary(
         }
 
     return {
+        "protocol_version": protocol_version,
         "vlm_model": vlm_model,
         "render_url": render_url,
         "model_slugs": model_slugs,
@@ -206,6 +221,7 @@ def _run_single_visual_judgment(
     candidate: visual_eval.VisualEvalTarget,
     task: Any,
     screenshot_path: Path,
+    protocol_version: str,
 ) -> dict[str, Any]:
     client = OpenAI(api_key=api_key, base_url=vlm_base_url)
     start = time.perf_counter()
@@ -228,6 +244,7 @@ def _run_single_visual_judgment(
         target=candidate,
         text_response=candidate.text_response,
         screenshot_path=screenshot_path,
+        protocol_version=protocol_version,
     )
     judge_end = time.perf_counter()
     visual = visual_eval._normalize_visual_result(judged)
@@ -256,6 +273,9 @@ def _run_single_visual_judgment(
 
 def main() -> None:
     args = _parse_args()
+    if not args.render_url:
+        args.render_url = visual_eval.default_render_url_for_protocol(args.protocol_version)
+    results_dir = eval_api.resolve_output_dir(Path(args.results_dir), args.protocol_version)
     visual_eval._setup_env()
     api_key = (
         args.judge_api_key
@@ -265,10 +285,15 @@ def main() -> None:
     if not api_key:
         raise RuntimeError("Missing API key. Set OPENROUTER_API_KEY or OPENAI_API_KEY.")
 
-    tasks_by_id = visual_eval._load_tasks_by_id(args.results_dir)
+    tasks_by_id = visual_eval._load_tasks_by_id(results_dir)
     eligible_by_model: dict[str, dict[str, visual_eval.VisualEvalTarget]] = {}
     for model_slug in args.model_slugs:
-        eligible = visual_eval._load_candidates(args.results_dir, model_slug, tasks_by_id)
+        eligible = visual_eval._load_candidates(
+            results_dir,
+            model_slug,
+            tasks_by_id,
+            protocol_version=args.protocol_version,
+        )
         eligible_by_model[model_slug] = {row.target_id: row for row in eligible}
     common_target_ids = sorted(
         set.intersection(*(set(rows.keys()) for rows in eligible_by_model.values()))
@@ -293,13 +318,14 @@ def main() -> None:
     eligible_counts = {model_slug: len(rows) for model_slug, rows in eligible_by_model.items()}
     common_task_ids = sorted({_pick_sample_target(eligible_by_model, target_id).task_id for target_id in common_target_ids})
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    output_dir = args.output_dir or (args.results_dir / f"visual_compare_common{len(common_target_ids)}_{timestamp}")
+    output_dir = args.output_dir or (results_dir / f"visual_compare_common{len(common_target_ids)}_{timestamp}")
     output_dir.mkdir(parents=True, exist_ok=True)
     screenshots_dir = output_dir / "screenshots"
     screenshots_dir.mkdir(exist_ok=True)
 
     metadata = {
-        "results_dir": str(args.results_dir),
+        "results_dir": str(results_dir),
+        "protocol_version": args.protocol_version,
         "model_slugs": args.model_slugs,
         "eligible_counts": eligible_counts,
         "common_target_count": len(common_target_ids),
@@ -329,6 +355,7 @@ def main() -> None:
         json.dumps(
             {
                 "output_dir": str(output_dir),
+                "protocol_version": args.protocol_version,
                 "total_judgments": total,
                 "already_completed": completed,
                 "common_target_count": len(common_target_ids),
@@ -390,6 +417,7 @@ def main() -> None:
                 candidate=candidate,
                 task=task,
                 screenshot_path=job["screenshot_path"],
+                protocol_version=args.protocol_version,
             )
             future_to_job[future] = job
 
@@ -434,6 +462,7 @@ def main() -> None:
                 vlm_model=args.vlm_model,
                 render_url=args.render_url,
                 eligible_counts=eligible_counts,
+                protocol_version=args.protocol_version,
             )
             _write_json(output_dir / "summary.json", summary)
 
@@ -446,6 +475,7 @@ def main() -> None:
         vlm_model=args.vlm_model,
         render_url=args.render_url,
         eligible_counts=eligible_counts,
+        protocol_version=args.protocol_version,
     )
     _write_json(output_dir / "summary.json", final_summary)
     if not (output_dir / "errors.json").exists():
