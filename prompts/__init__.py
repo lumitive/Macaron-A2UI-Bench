@@ -9,9 +9,13 @@ from pathlib import Path
 _DIR = Path(__file__).parent
 
 
-def load_l2_judge_prompt() -> str:
+def load_l2_judge_prompt(protocol_version: str = "0.8") -> str:
+    if protocol_version == "0.9.1":
+        return (_DIR / "l2_judge_v091.txt").read_text(encoding="utf-8")
     return (_DIR / "l2_judge.txt").read_text(encoding="utf-8")
 
 
-def load_l3_judge_prompt() -> str:
+def load_l3_judge_prompt(protocol_version: str = "0.8") -> str:
+    if protocol_version == "0.9.1":
+        return (_DIR / "l3_judge_v091.txt").read_text(encoding="utf-8")
     return (_DIR / "l3_judge.txt").read_text(encoding="utf-8")
