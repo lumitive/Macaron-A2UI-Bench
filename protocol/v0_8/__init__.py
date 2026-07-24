@@ -1,27 +1,27 @@
 from __future__ import annotations
 
-from typing import Any
+import sys
+from pathlib import Path
 
 from protocol.types import ProtocolStack
+from protocol.v0_8.guides import COMPONENT_SCHEMA_CONTEXT, GENERATION_GUIDE
 
+_ROOT = Path(__file__).resolve().parents[2]
+_VENDOR = _ROOT / "vendor"
+if str(_VENDOR) not in sys.path:
+    sys.path.insert(0, str(_VENDOR))
 
-def _not_implemented_validate(*args: Any, **kwargs: Any) -> Any:
-    raise NotImplementedError("0.8 validate adapter pending Task 2")
-
-
-def _not_implemented_render_check(
-    messages: list[dict[str, Any]],
-) -> tuple[bool, list[str]]:
-    raise NotImplementedError("0.8 render_check adapter pending Task 2")
+from a2ui_demo.server.a2ui_lint import validate  # type: ignore
+from render_check import render_check
 
 
 def build_stack() -> ProtocolStack:
     return ProtocolStack(
         version="0.8",
-        catalog_id="",
+        catalog_id="legacy-0.8-vendor-a2ui-demo",  # local sentinel; not an upstream catalog URI
         strip_gt_a2ui=False,
-        generation_guide="",
-        validate=_not_implemented_validate,
-        render_check=_not_implemented_render_check,
-        component_schema_context="",
+        generation_guide=GENERATION_GUIDE,
+        validate=validate,
+        render_check=render_check,
+        component_schema_context=COMPONENT_SCHEMA_CONTEXT,
     )

@@ -1,0 +1,34 @@
+[
+  {
+    "surfaceUpdate": {
+      "surfaceId": "s1",
+      "components": [
+        {
+          "id": "t1",
+          "component": {
+            "Text": {
+              "text": {"literalString": "Hello"},
+              "usageHint": "body"
+            }
+          }
+        }
+      ]
+    }
+  },
+  {
+    "dataModelUpdate": {
+      "surfaceId": "s1",
+      "path": "/",
+      "contents": [
+        {"key": "greeting", "valueString": "Hello"}
+      ]
+    }
+  },
+  {
+    "beginRendering": {
+      "surfaceId": "s1",
+      "root": "t1",
+      "styles": {"primaryColor": "#1976D2"}
+    }
+  }
+]
