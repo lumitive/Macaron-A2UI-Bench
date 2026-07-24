@@ -3,18 +3,15 @@ from __future__ import annotations
 from typing import Any
 
 from protocol.types import ProtocolStack
+from protocol.v0_9_1.lint import LOCKED_CATALOG_ID, validate
 
-CATALOG_ID = "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
-
-
-def _not_implemented_validate(*args: Any, **kwargs: Any) -> Any:
-    raise NotImplementedError("0.9.1 validate pending Task 3")
+CATALOG_ID = LOCKED_CATALOG_ID
 
 
 def _not_implemented_render_check(
     messages: list[dict[str, Any]],
 ) -> tuple[bool, list[str]]:
-    raise NotImplementedError("0.9.1 render_check pending Task 3")
+    raise NotImplementedError("0.9.1 render_check pending Task 4")
 
 
 def build_stack() -> ProtocolStack:
@@ -23,7 +20,7 @@ def build_stack() -> ProtocolStack:
         catalog_id=CATALOG_ID,
         strip_gt_a2ui=True,
         generation_guide="",
-        validate=_not_implemented_validate,
+        validate=validate,
         render_check=_not_implemented_render_check,
         component_schema_context="",
     )
