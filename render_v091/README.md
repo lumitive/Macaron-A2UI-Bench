@@ -54,3 +54,7 @@ Automation hook: `window.__A2UI_RENDER__` with `reset()` / `processTurn(messages
 ```bash
 npm run build
 ```
+
+## CI note: `@a2ui/web_core/v0_9` resolution
+
+Upstream `web_core` package exports point at `dist/`, which is gitignored in the vendor tree. Fresh CI checkouts therefore cannot resolve `@a2ui/web_core/v0_9`. This bench remaps the `./v0_9` and `./v0_9/basic_catalog` exports in `vendor/a2ui/renderers/web_core/package.json` to the committed TypeScript sources under `src/v0_9/`.
