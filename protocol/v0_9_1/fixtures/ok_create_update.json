@@ -1,0 +1,19 @@
+[
+  {
+    "version": "v0.9.1",
+    "createSurface": {
+      "surfaceId": "main",
+      "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+    }
+  },
+  {
+    "version": "v0.9.1",
+    "updateComponents": {
+      "surfaceId": "main",
+      "components": [
+        {"id": "root", "component": "Column", "children": ["title"]},
+        {"id": "title", "component": "Text", "text": "Hello"}
+      ]
+    }
+  }
+]

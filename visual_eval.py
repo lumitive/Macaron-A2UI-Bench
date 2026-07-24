@@ -4,12 +4,13 @@
 Example:
   python visual_eval.py \
     --results-dir ./results \
+    --protocol-version 0.9.1 \
     --model-slug openai__gpt-4o-mini \
     --limit 5
 
 Prerequisites:
   1. Start a compatible local render service and expose it at `--render-url`
-     (default `http://127.0.0.1:5173/`).
+     (default: 0.8 → `http://127.0.0.1:5173/`; 0.9.1 → `http://127.0.0.1:5174/`).
   2. Set `OPENROUTER_API_KEY` (or `OPENAI_API_KEY`) for the VLM judge.
 """
 
@@ -31,24 +32,41 @@ from urllib.parse import urlencode
 
 from openai import OpenAI
 
-try:
-    from PIL import Image
-except ModuleNotFoundError as exc:  # pragma: no cover - optional dependency path
-    raise ModuleNotFoundError(
-        "visual_eval.py requires Pillow. Install optional visual dependencies with `pip install -r requirements-visual.txt`."
-    ) from exc
-
 _EVAL_ROOT = Path(__file__).resolve().parent
 if str(_EVAL_ROOT) not in sys.path:
     sys.path.insert(0, str(_EVAL_ROOT))
 
 import evaluate_api_model as eval_api  # noqa: E402
-from render_check import render_check as run_render_check  # noqa: E402
+from protocol import get_protocol_stack  # noqa: E402
 
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "results"
-DEFAULT_RENDER_URL = "http://127.0.0.1:5173/"
+DEFAULT_PROTOCOL_VERSION = "0.9.1"
+DEFAULT_RENDER_URL = "http://127.0.0.1:5174/"
 DEFAULT_VLM_MODEL = "qwen/qwen3-vl-235b-a22b-instruct"
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
+
+
+def default_render_url_for_protocol(protocol_version: str) -> str:
+    """Return the default local renderer URL for a protocol version."""
+    if protocol_version == "0.9.1":
+        return "http://127.0.0.1:5174/"
+    if protocol_version == "0.8":
+        return "http://127.0.0.1:5173/"
+    raise ValueError(f"Unsupported protocol version: {protocol_version!r}")
+
+
+def select_targets_with_stack_render_check(
+    a2ui_messages: list[dict[str, Any]],
+    *,
+    protocol_version: str,
+) -> tuple[bool, list[str]]:
+    """Filter visual candidates via the active protocol stack's render_check.
+
+    Never uses root ``render_check.py`` directly — 0.9.1 messages must go
+    through ``get_protocol_stack(...).render_check``.
+    """
+    stack = get_protocol_stack(protocol_version)
+    return stack.render_check(a2ui_messages)
 
 
 def _iter_search_roots() -> list[Path]:
@@ -93,11 +111,23 @@ def _parse_args() -> argparse.Namespace:
         description="Minimal VLM-based visual evaluation over existing API result files."
     )
     parser.add_argument("--results-dir", type=Path, default=DEFAULT_RESULTS_DIR)
+    parser.add_argument(
+        "--protocol-version",
+        choices=["0.8", "0.9.1"],
+        default=DEFAULT_PROTOCOL_VERSION,
+        help="A2UI protocol stack (default 0.9.1). Selects render_check, "
+        "default render URL, results subdir, and VLM copy.",
+    )
     parser.add_argument("--model-slug", type=str, default="openai__gpt-4o-mini")
     parser.add_argument("--limit", type=int, default=5)
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--selection", choices=["balanced", "random"], default="balanced")
-    parser.add_argument("--render-url", type=str, default=DEFAULT_RENDER_URL)
+    parser.add_argument(
+        "--render-url",
+        type=str,
+        default=None,
+        help="Renderer base URL (default: 0.8→5173, 0.9.1→5174).",
+    )
     parser.add_argument("--vlm-model", type=str, default=DEFAULT_VLM_MODEL)
     parser.add_argument("--vlm-base-url", type=str, default=default_base_url)
     parser.add_argument("--judge-api-key", type=str, default=None)
@@ -153,6 +183,7 @@ def _make_single_turn_target(
     row: dict[str, Any],
     model_slug: str,
     task: eval_api.TaskSample,
+    protocol_version: str,
 ) -> VisualEvalTarget | None:
     model_output = row.get("model_output", {})
     hard_fail = row.get("hard_fail", {})
@@ -165,9 +196,11 @@ def _make_single_turn_target(
     a2ui_messages = model_output.get("a2ui_messages") or []
     if not a2ui_messages:
         return None
-    # Re-run current render_check to avoid trusting stale result files produced
-    # before checker fixes landed.
-    render_pass, _ = run_render_check(a2ui_messages)
+    # Re-run stack render_check to avoid trusting stale result files and to
+    # avoid filtering 0.9.1 candidates through root 0.8 render_check.py.
+    render_pass, _ = select_targets_with_stack_render_check(
+        a2ui_messages, protocol_version=protocol_version
+    )
     if not render_pass:
         return None
     return VisualEvalTarget(
@@ -193,6 +226,7 @@ def _make_depth_step_targets(
     row: dict[str, Any],
     model_slug: str,
     task: eval_api.TaskSample,
+    protocol_version: str,
 ) -> list[VisualEvalTarget]:
     model_output = row.get("model_output", {})
     steps = model_output.get("steps", []) or []
@@ -208,7 +242,9 @@ def _make_depth_step_targets(
             continue
         if not a2ui_messages:
             continue
-        render_pass, _ = run_render_check(a2ui_messages)
+        render_pass, _ = select_targets_with_stack_render_check(
+            a2ui_messages, protocol_version=protocol_version
+        )
         if not render_pass:
             continue
         targets.append(
@@ -236,6 +272,8 @@ def _load_candidates(
     results_dir: Path,
     model_slug: str,
     tasks_by_id: dict[str, eval_api.TaskSample],
+    *,
+    protocol_version: str = DEFAULT_PROTOCOL_VERSION,
 ) -> list[VisualEvalTarget]:
     task_results = json.loads((results_dir / model_slug / "task_results.json").read_text(encoding="utf-8"))
     candidates: list[VisualEvalTarget] = []
@@ -244,9 +282,21 @@ def _load_candidates(
         if task is None:
             continue
         if row.get("difficulty_level") == "depth":
-            candidates.extend(_make_depth_step_targets(row=row, model_slug=model_slug, task=task))
+            candidates.extend(
+                _make_depth_step_targets(
+                    row=row,
+                    model_slug=model_slug,
+                    task=task,
+                    protocol_version=protocol_version,
+                )
+            )
             continue
-        target = _make_single_turn_target(row=row, model_slug=model_slug, task=task)
+        target = _make_single_turn_target(
+            row=row,
+            model_slug=model_slug,
+            task=task,
+            protocol_version=protocol_version,
+        )
         if target is not None:
             candidates.append(target)
     return candidates
@@ -486,6 +536,14 @@ def _crop_screenshot_to_stage(image_path: Path, *, tolerance: int = 6, margin: i
     the stage. We crop to the bounding box of pixels that differ from the page
     background, keeping a small margin so the card border/shadow is retained.
     """
+    try:
+        from PIL import Image
+    except ModuleNotFoundError as exc:  # pragma: no cover - optional dependency path
+        raise ModuleNotFoundError(
+            "visual_eval.py requires Pillow. Install optional visual dependencies "
+            "with `pip install -r requirements-visual.txt`."
+        ) from exc
+
     with Image.open(image_path) as image:
         rgb = image.convert("RGB")
         width, height = rgb.size
@@ -566,15 +624,29 @@ def _judge_prompt(
     user_message: str | None = None,
     step_idx: int | None = None,
     step_count: int | None = None,
+    protocol_version: str = DEFAULT_PROTOCOL_VERSION,
 ) -> str:
     dialogue_context = dialogue_context if dialogue_context is not None else task.dialogue_context
     user_message = user_message if user_message is not None else task.user_message
     step_line = ""
     if step_idx is not None and step_count is not None:
         step_line = f"- Trajectory step: {step_idx + 1}/{step_count}\n"
+    if protocol_version == "0.9.1":
+        protocol_line = (
+            "This evaluation uses A2UI protocol v0.9.1. "
+            "Expect flat component names (Text, Button, ChoicePicker, TextField, etc.). "
+            "Do not expect or prefer 0.8-only names/shapes such as SelectionList, Label, "
+            "key-wrapped components, or beginRendering/surfaceUpdate."
+        )
+    else:
+        protocol_line = (
+            "This evaluation uses A2UI protocol v0.8. "
+            "Components may use 0.8 key-wrapped shapes and catalog names."
+        )
     return f"""You are a strict multimodal UI judge.
 
 Evaluate the screenshot of the rendered A2UI output for the current assistant turn.
+{protocol_line}
 Be conservative and visually strict. Do not assume hidden content is fine just because the task sounds good.
 Judge only what is visibly shown in the screenshot.
 
@@ -604,6 +676,7 @@ Visible defects matter:
 - If such a defect is present, mention it explicitly in `issues_detected` and reflect it in the relevant score, especially V1 and V3.
 
 Task info:
+- Protocol version: {protocol_version}
 - Scenario: {task.scenario_id} {eval_api.SCENARIO_DEFS[task.scenario_id]}
 {step_line}- Difficulty: {task.difficulty_level}
 - Task description: {task.task_description}
@@ -647,6 +720,7 @@ def _judge_visual(
     target: VisualEvalTarget,
     text_response: str,
     screenshot_path: Path,
+    protocol_version: str = DEFAULT_PROTOCOL_VERSION,
 ) -> dict[str, Any]:
     image_b64 = base64.b64encode(screenshot_path.read_bytes()).decode("ascii")
     prompt = _judge_prompt(
@@ -656,6 +730,7 @@ def _judge_visual(
         user_message=target.user_message,
         step_idx=target.step_idx,
         step_count=target.step_count,
+        protocol_version=protocol_version,
     )
     base_messages = [
         {
@@ -739,6 +814,7 @@ def _build_summary(
     judged_rows = [row for row in run_rows if row.get("visual_eval")]
     summary = {
         "model_slug": args.model_slug,
+        "protocol_version": args.protocol_version,
         "num_samples": len(run_rows),
         "num_judged": len(judged_rows),
         "num_errors": len(error_rows),
@@ -786,6 +862,9 @@ def _build_run_row(
 def main() -> None:
     _setup_env()
     args = _parse_args()
+    if not args.render_url:
+        args.render_url = default_render_url_for_protocol(args.protocol_version)
+    results_dir = eval_api.resolve_output_dir(Path(args.results_dir), args.protocol_version)
     api_key = (
         args.judge_api_key
         or os.environ.get("OPENROUTER_API_KEY")
@@ -794,8 +873,13 @@ def main() -> None:
     if not args.skip_judge and not api_key:
         raise RuntimeError("Missing API key. Set OPENROUTER_API_KEY or pass --judge-api-key.")
 
-    tasks_by_id = _load_tasks_by_id(args.results_dir)
-    candidates = _load_candidates(args.results_dir, args.model_slug, tasks_by_id)
+    tasks_by_id = _load_tasks_by_id(results_dir)
+    candidates = _load_candidates(
+        results_dir,
+        args.model_slug,
+        tasks_by_id,
+        protocol_version=args.protocol_version,
+    )
     selected = _select_candidates(
         candidates,
         limit=args.limit,
@@ -807,7 +891,7 @@ def main() -> None:
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     output_dir = args.output_dir or (
-        args.results_dir / f"visual_eval_{args.model_slug}_{timestamp}"
+        results_dir / f"visual_eval_{args.model_slug}_{timestamp}"
     )
     screenshots_dir = output_dir / "screenshots"
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -820,8 +904,10 @@ def main() -> None:
         "Running minimal visual eval:",
         {
             "model_slug": args.model_slug,
+            "protocol_version": args.protocol_version,
             "targets": len(selected),
             "render_url": args.render_url,
+            "results_dir": str(results_dir),
             "vlm_model": None if args.skip_judge else args.vlm_model,
             "output_dir": str(output_dir),
             "skip_judge": args.skip_judge,
@@ -926,6 +1012,7 @@ def main() -> None:
                         target=target,
                         text_response=target.text_response,
                         screenshot_path=screenshot_path,
+                        protocol_version=args.protocol_version,
                     )
                     row["visual_eval"] = _normalize_visual_result(judged)
                     row["judge_status"] = "ok"

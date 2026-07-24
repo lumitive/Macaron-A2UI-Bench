@@ -7,9 +7,14 @@ render/node_modules/
 render/dist/
 render/output/
 render/vendor/**/node_modules/
+render_v091/node_modules/
+render_v091/dist/
+render_v091/vendor/**/node_modules/
 vendor/**/node_modules/
 results/
 visual_compare_*/
 tmp_visual_*/
 _tmp_visual_*/
 screenshots/
+
+.worktrees/
