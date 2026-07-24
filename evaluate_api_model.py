@@ -50,7 +50,8 @@ def _find_nearby_dir(name: str) -> Path | None:
 
 from openai import AsyncOpenAI
 
-from render_check import render_check as _render_check
+from prompts import load_l2_judge_prompt, load_l3_judge_prompt
+from protocol import ProtocolStack, get_protocol_stack
 
 
 DEFAULT_MODELS = [
@@ -347,7 +348,38 @@ def _load_component_catalog_and_summary() -> tuple[str, str]:
     return _COMPONENT_CATALOG_CACHE
 
 
+def resolve_output_dir(base: Path, protocol_version: str) -> Path:
+    """Nest results under ``<base>/<protocol_version>/`` unless already there."""
+    if base.name == protocol_version:
+        return base
+    return base / protocol_version
+
+
+def strip_episode_gt_a2ui(episode_turns: list[dict]) -> list[dict]:
+    """Drop gold ``gt_a2ui`` from episode turns (0.9.1 depth path)."""
+    cleaned: list[dict] = []
+    for turn in episode_turns:
+        t = dict(turn)
+        t.pop("gt_a2ui", None)
+        cleaned.append(t)
+    return cleaned
+
+
+def resolve_generation_guide(*, prompt_mode: str, stack: ProtocolStack) -> str:
+    """Select generation guide from the protocol stack; hard-error full+0.9.1."""
+    if prompt_mode == "full" and stack.version == "0.9.1":
+        raise ValueError(
+            "prompt_mode=full is not supported with protocol_version=0.9.1; "
+            "use --prompt-mode minimal (Phase 1 has no 0.9.1 full prompt)"
+        )
+    if prompt_mode in ("minimal", "sft"):
+        return stack.generation_guide
+    # full + 0.8 only
+    return _build_generation_guide("full")
+
+
 def _build_generation_guide(prompt_mode: str) -> str:
+    """Legacy 0.8 full-prompt builder. Prefer ``resolve_generation_guide`` + stack."""
     component_catalog, component_summary = _load_component_catalog_and_summary()
 
     if prompt_mode in ("minimal", "sft"):
@@ -835,6 +867,15 @@ def evaluate_l1_scores(
     return l1, l1_pass, details
 
 
+def _component_type_names(component_field: Any) -> list[str]:
+    """Extract component type names from 0.8 key-wrap or 0.9.1 flat string."""
+    if isinstance(component_field, str) and component_field.strip():
+        return [component_field.strip()]
+    if isinstance(component_field, dict):
+        return [str(k) for k in component_field.keys()]
+    return []
+
+
 def _a2ui_summary(messages: list[dict]) -> str:
     if not messages:
         return "(no A2UI messages)"
@@ -843,20 +884,35 @@ def _a2ui_summary(messages: list[dict]) -> str:
         if "surfaceUpdate" in msg:
             su = msg["surfaceUpdate"]
             sid = su.get("surfaceId", "?")
-            c_types = []
+            c_types: list[str] = []
             for c in su.get("components", []):
-                c_types.extend(list(c.get("component", {}).keys()))
+                c_types.extend(_component_type_names(c.get("component")))
             lines.append(f"surfaceUpdate({sid}): {', '.join(c_types)}")
+        elif "updateComponents" in msg:
+            uc = msg["updateComponents"]
+            sid = uc.get("surfaceId", "?")
+            c_types = []
+            for c in uc.get("components", []):
+                c_types.extend(_component_type_names(c.get("component")))
+            lines.append(f"updateComponents({sid}): {', '.join(c_types)}")
         elif "dataModelUpdate" in msg:
             dm = msg["dataModelUpdate"]
             sid = dm.get("surfaceId", "?")
             keys = [x.get("key", "") for x in dm.get("contents", [])]
             lines.append(f"dataModelUpdate({sid}): keys={keys}")
+        elif "updateDataModel" in msg:
+            dm = msg["updateDataModel"]
+            sid = dm.get("surfaceId", "?")
+            keys = [x.get("key", "") for x in dm.get("contents", [])]
+            lines.append(f"updateDataModel({sid}): keys={keys}")
         elif "beginRendering" in msg:
             lines.append(f"beginRendering({msg['beginRendering'].get('surfaceId', '?')})")
+        elif "createSurface" in msg:
+            cs = msg["createSurface"]
+            lines.append(f"createSurface({cs.get('surfaceId', '?')})")
         elif "deleteSurface" in msg:
             lines.append(f"deleteSurface({msg['deleteSurface'].get('surfaceId', '?')})")
-    return "\n".join(lines)[:2000]
+    return "\n".join(lines)[:2000] if lines else "(no A2UI messages)"
 
 
 def _truncate_json_for_prompt(payload: Any, *, max_chars: int) -> str:
@@ -885,24 +941,7 @@ def _build_l3_rubric_hints(scenario_id: str) -> str:
     return "\n".join(lines)
 
 
-# Load prompts from files
-_PROMPTS_DIR = Path(__file__).resolve().parent / "prompts"
-_L2_PROMPT_TEMPLATE: str | None = None
-_L3_PROMPT_TEMPLATE: str | None = None
-
-
-def _get_l2_prompt_template() -> str:
-    global _L2_PROMPT_TEMPLATE
-    if _L2_PROMPT_TEMPLATE is None:
-        _L2_PROMPT_TEMPLATE = (_PROMPTS_DIR / "l2_judge.txt").read_text(encoding="utf-8")
-    return _L2_PROMPT_TEMPLATE
-
-
-def _get_l3_prompt_template() -> str:
-    global _L3_PROMPT_TEMPLATE
-    if _L3_PROMPT_TEMPLATE is None:
-        _L3_PROMPT_TEMPLATE = (_PROMPTS_DIR / "l3_judge.txt").read_text(encoding="utf-8")
-    return _L3_PROMPT_TEMPLATE
+# Judge prompt templates loaded via prompts.load_* (protocol-version aware).
 
 
 def build_l2_judge_messages(
@@ -912,14 +951,21 @@ def build_l2_judge_messages(
     *,
     dialogue_context: list[dict[str, str]] | None = None,
     user_message: str | None = None,
+    protocol_version: str = "0.8",
+    component_schema_context: str | None = None,
 ) -> list[dict[str, str]]:
     """Build L2 judge prompt with rich principle-grounded rubrics."""
     dialogue_context = dialogue_context if dialogue_context is not None else task.dialogue_context
     user_message = user_message if user_message is not None else task.user_message
     a2ui_raw = _truncate_json_for_prompt(a2ui_messages, max_chars=3000)
+    schema_ctx = (
+        component_schema_context
+        if component_schema_context is not None
+        else _build_component_schema_context()
+    )
 
     addendum = _build_task_addendum(task)
-    prompt = _get_l2_prompt_template().format(
+    prompt = load_l2_judge_prompt(protocol_version).format(
         rubric_hints=_build_l2_rubric_hints(task.scenario_id),
         scenario_id=task.scenario_id,
         scenario_def=SCENARIO_DEFS[task.scenario_id],
@@ -929,7 +975,7 @@ def build_l2_judge_messages(
         text_response=text_response,
         a2ui_summary=_a2ui_summary(a2ui_messages),
         a2ui_raw_json=a2ui_raw,
-        component_schema_context=_build_component_schema_context(),
+        component_schema_context=schema_ctx,
     )
     return [{"role": "user", "content": prompt}]
 
@@ -941,10 +987,17 @@ def build_l3_judge_messages(
     *,
     dialogue_context: list[dict[str, str]] | None = None,
     user_message: str | None = None,
+    protocol_version: str = "0.8",
+    component_schema_context: str | None = None,
 ) -> list[dict[str, str]]:
     """Build L3 judge prompt with rich principle-grounded rubrics."""
     dialogue_context = dialogue_context if dialogue_context is not None else task.dialogue_context
     user_message = user_message if user_message is not None else task.user_message
+    schema_ctx = (
+        component_schema_context
+        if component_schema_context is not None
+        else _build_component_schema_context()
+    )
     addendum = _build_task_addendum(task)
     model_output_raw = _truncate_json_for_prompt(
         {
@@ -953,7 +1006,7 @@ def build_l3_judge_messages(
         },
         max_chars=8000,
     )
-    prompt = _get_l3_prompt_template().format(
+    prompt = load_l3_judge_prompt(protocol_version).format(
         rubric_hints=_build_l3_rubric_hints(task.scenario_id),
         scenario_id=task.scenario_id,
         scenario_def=SCENARIO_DEFS[task.scenario_id],
@@ -963,7 +1016,7 @@ def build_l3_judge_messages(
         text_response=text_response,
         a2ui_summary=_a2ui_summary(a2ui_messages),
         model_output_raw_json=model_output_raw,
-        component_schema_context=_build_component_schema_context(),
+        component_schema_context=schema_ctx,
     )
     return [{"role": "user", "content": prompt}]
 
@@ -1086,6 +1139,9 @@ async def _score_prediction(
     judge_client: AsyncOpenAI,
     validate_fn,
     judge_sem: asyncio.Semaphore,
+    render_check_fn,
+    protocol_version: str = "0.8",
+    component_schema_context: str | None = None,
     precomputed_l1: tuple[dict[str, float], bool, dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     if parse_error:
@@ -1117,7 +1173,7 @@ async def _score_prediction(
 
     # Render check gate: after L1 pass, before L2/L3 judge call
     if l1_pass and not skip_l2l3 and a2ui_messages:
-        render_check_pass, render_check_issues = _render_check(a2ui_messages)
+        render_check_pass, render_check_issues = render_check_fn(a2ui_messages)
         if not render_check_pass:
             # Penalize instead of skipping: give L2/L3 floor scores (1.0)
             l2_scores = {k: 1.0 for k in L2_DIMS}
@@ -1141,7 +1197,13 @@ async def _score_prediction(
             raw_l2_judge = await _chat_completion_json(
                 judge_client,
                 judge_model,
-                build_l2_judge_messages(scoring_task, text_response, a2ui_messages),
+                build_l2_judge_messages(
+                    scoring_task,
+                    text_response,
+                    a2ui_messages,
+                    protocol_version=protocol_version,
+                    component_schema_context=component_schema_context,
+                ),
                 temperature=0.0,
                 max_tokens=2000,
             )
@@ -1166,7 +1228,13 @@ async def _score_prediction(
             raw_l3_judge = await _chat_completion_json(
                 judge_client,
                 judge_model,
-                build_l3_judge_messages(scoring_task, text_response, a2ui_messages),
+                build_l3_judge_messages(
+                    scoring_task,
+                    text_response,
+                    a2ui_messages,
+                    protocol_version=protocol_version,
+                    component_schema_context=component_schema_context,
+                ),
                 temperature=0.0,
                 max_tokens=2000,
             )
@@ -1308,24 +1376,40 @@ async def evaluate_one_task(
     judge_sem: asyncio.Semaphore,
     generation_guide: str,
     model_max_tokens: int,
+    stack: ProtocolStack,
 ) -> dict[str, Any]:
+    score_kwargs = dict(
+        judge_model=judge_model,
+        judge_client=judge_client,
+        validate_fn=validate_fn,
+        judge_sem=judge_sem,
+        render_check_fn=stack.render_check,
+        protocol_version=stack.version,
+        component_schema_context=stack.component_schema_context,
+    )
     if task.difficulty_level == "depth" and task.episode_turns:
         running_context = list(task.raw_context.get("initial_dialogue_context", task.dialogue_context))
         step_rollouts: list[dict[str, Any]] = []
-        total_steps = len(task.episode_turns)
+        episode_turns = (
+            strip_episode_gt_a2ui(task.episode_turns)
+            if stack.strip_gt_a2ui
+            else task.episode_turns
+        )
+        total_steps = len(episode_turns)
         flat_a2ui_messages: list[dict] = []
         parse_notes: list[str] = []
         last_raw_pred = ""
         last_user_message = ""
         # Per-step L1 validation (avoids false REF_DUPLICATE_ID from cross-step ID reuse)
         step_l1_results: list[tuple[dict[str, float], bool, dict[str, Any]]] = []
-        for step_idx, step in enumerate(task.episode_turns):
+        for step_idx, step in enumerate(episode_turns):
+            step_gt = [] if stack.strip_gt_a2ui else step.get("gt_a2ui", [])
             scoring_task = _make_override_task(
                 task,
                 user_message=str(step.get("user_message", "")).strip(),
                 dialogue_context=running_context[-8:],
                 expected_pattern=str(step.get("expected_pattern", task.expected_pattern)),
-                gt_a2ui=step.get("gt_a2ui", []),
+                gt_a2ui=step_gt,
                 gt_assistant_text=str(step.get("gt_assistant_text", "")),
                 intent_type=str(step.get("intent_type", task.intent_type)),
             )
@@ -1420,12 +1504,13 @@ async def evaluate_one_task(
         }
         depth_l1 = (agg_l1_scores, agg_l1_pass, agg_l1_details)
 
+        overall_gt = [] if stack.strip_gt_a2ui else task.gt_a2ui
         overall_scoring_task = _make_override_task(
             task,
             user_message=last_user_message,
             dialogue_context=running_context[-8:],
             expected_pattern=task.expected_pattern,
-            gt_a2ui=task.gt_a2ui,
+            gt_a2ui=overall_gt,
             gt_assistant_text=task.gt_assistant_text,
             intent_type=task.intent_type,
         )
@@ -1436,11 +1521,8 @@ async def evaluate_one_task(
             last_raw_pred,
             False,
             "; ".join(parse_notes),
-            judge_model=judge_model,
-            judge_client=judge_client,
-            validate_fn=validate_fn,
-            judge_sem=judge_sem,
             precomputed_l1=depth_l1,
+            **score_kwargs,
         )
         return _aggregate_depth_result(task, step_rollouts, overall_scored)
 
@@ -1459,10 +1541,7 @@ async def evaluate_one_task(
         raw_pred,
         parse_error,
         parse_note,
-        judge_model=judge_model,
-        judge_client=judge_client,
-        validate_fn=validate_fn,
-        judge_sem=judge_sem,
+        **score_kwargs,
     )
     return {
         "task_id": task.task_id,
@@ -1629,11 +1708,15 @@ async def evaluate_models(args) -> None:
     if not judge_api_key:
         raise RuntimeError("Missing judge API key. Set JUDGE_OPENAI_API_KEY or pass --judge-api-key.")
 
-    validate_fn = _ensure_a2ui_lint_import()
-    generation_guide = _build_generation_guide(args.prompt_mode)
-    print(f"Prompt mode: {args.prompt_mode}, guide_chars={len(generation_guide)}")
+    stack = get_protocol_stack(args.protocol_version)
+    validate_fn = stack.validate
+    generation_guide = resolve_generation_guide(prompt_mode=args.prompt_mode, stack=stack)
+    print(
+        f"Protocol version: {stack.version}, prompt mode: {args.prompt_mode}, "
+        f"guide_chars={len(generation_guide)}"
+    )
     task_dir = Path(args.task_dir)
-    out_dir = Path(args.output_dir)
+    out_dir = resolve_output_dir(Path(args.output_dir), args.protocol_version)
 
     source_filter = set(args.sources)
     all_tasks = [
@@ -1653,6 +1736,7 @@ async def evaluate_models(args) -> None:
     save_json(
         out_dir / "task_sample_manifest.json",
         {
+            "protocol_version": args.protocol_version,
             "task_dir": str(task_dir),
             "max_per_scenario": args.max_per_scenario,
             "seed": args.seed,
@@ -1684,6 +1768,7 @@ async def evaluate_models(args) -> None:
                 judge_sem=judge_sem,
                 generation_guide=generation_guide,
                 model_max_tokens=args.model_max_tokens,
+                stack=stack,
             )
             for t in selected
         ]
@@ -1691,9 +1776,11 @@ async def evaluate_models(args) -> None:
         summary = aggregate_results(task_results)
         summary["model"] = model_name
         summary["judge_model"] = args.judge_model
+        summary["protocol_version"] = args.protocol_version
         summary["elapsed_seconds"] = round(time.time() - start, 2)
         summary["generation_prompt"] = {
             "prompt_mode": args.prompt_mode,
+            "protocol_version": args.protocol_version,
             "model_max_tokens": args.model_max_tokens,
             "schema_hint": generation_guide,
             "output_format_hint": OUTPUT_SCHEMA_HINT.strip(),
@@ -1715,7 +1802,14 @@ async def evaluate_models(args) -> None:
         )
 
     leaderboard = build_leaderboard(model_to_summary)
-    save_json(out_dir / "comparison.json", {"models": model_to_summary, **leaderboard})
+    save_json(
+        out_dir / "comparison.json",
+        {
+            "protocol_version": args.protocol_version,
+            "models": model_to_summary,
+            **leaderboard,
+        },
+    )
 
     print("\n=== Leaderboard ===")
     for i, row in enumerate(leaderboard["leaderboard"], start=1):
@@ -1761,13 +1855,19 @@ def parse_args():
         "--prompt-mode",
         choices=["minimal", "full"],
         default="minimal",
-        help="Prompt verbosity: minimal (component list + descriptions), full (complete schema from a2ui_demo).",
+        help="Prompt verbosity: minimal (stack generation guide), full (0.8 complete schema only).",
+    )
+    parser.add_argument(
+        "--protocol-version",
+        choices=["0.8", "0.9.1"],
+        default="0.8",
+        help="A2UI protocol stack (default 0.8 until Task 8 switches default to 0.9.1).",
     )
     parser.add_argument(
         "--output-dir",
         type=Path,
         default=_EVAL_ROOT / "results",
-        help="Output directory.",
+        help="Output directory (results land under <output-dir>/<protocol-version>/).",
     )
     parser.add_argument("--api-key", default="", help="API key (fallback to OPENAI_API_KEY env).")
     parser.add_argument("--base-url", default="", help="API base URL (fallback to OPENAI_BASE_URL env).")
