@@ -98,10 +98,10 @@ def test_a2ui_summary_still_handles_0_8_shapes():
     assert "deleteSurface" in summary
 
 
-def test_protocol_version_cli_default_is_0_8(monkeypatch):
+def test_protocol_version_cli_default_is_0_9_1(monkeypatch):
     monkeypatch.setattr("sys.argv", ["evaluate_api_model.py"])
     args = parse_args()
-    assert args.protocol_version == "0.8"
+    assert args.protocol_version == "0.9.1"
 
 
 def test_protocol_version_cli_accepts_0_9_1(monkeypatch):

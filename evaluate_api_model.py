@@ -1860,8 +1860,8 @@ def parse_args():
     parser.add_argument(
         "--protocol-version",
         choices=["0.8", "0.9.1"],
-        default="0.8",
-        help="A2UI protocol stack (default 0.8 until Task 8 switches default to 0.9.1).",
+        default="0.9.1",
+        help="A2UI protocol stack (default 0.9.1; use 0.8 for legacy comparison).",
     )
     parser.add_argument(
         "--output-dir",

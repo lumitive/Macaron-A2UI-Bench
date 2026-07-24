@@ -4,6 +4,17 @@ Standalone benchmark for evaluating A2UI JSON generation.
 
 This repository is organized around a **JSON-first evaluation path**: the main benchmark reads model JSON outputs and computes L1/L2/L3 scores without requiring a render service. Render- and VLM-based visual checks are available as an **optional extension**, not the default workflow.
 
+The benchmark supports two A2UI protocol stacks in parallel:
+
+- **v0.9.1** (default): modern flat-component messages; results under `./results/0.9.1/`; optional renderer in `render_v091/` on port **5174**
+- **v0.8** (legacy comparison): key-wrapped messages; results under `./results/0.8/`; optional renderer in `render/` on port **5173**
+
+Select a stack with `--protocol-version` on Python CLIs or `PROTOCOL_VERSION` in `run_benchmark.sh`. To compare against the legacy stack:
+
+```bash
+PROTOCOL_VERSION=0.8 bash run_benchmark.sh
+```
+
 ## What Is Core vs Optional
 
 Core path:
@@ -27,7 +38,8 @@ Optional extension:
 - `data/source/`: bundled source task files used for resampling.
 - `visual_eval.py`: optional render + screenshot + VLM-based visual scoring.
 - `visual_compare_models.py`: optional cross-model visual comparison.
-- `render/`: optional bundled renderer project.
+- `render/`: optional bundled **v0.8** renderer project (port 5173).
+- `render_v091/`: optional bundled **v0.9.1** renderer project (port 5174).
 - `vendor/a2ui_demo/`: bundled A2UI lint/schema assets required by the evaluator.
 - `render/vendor/a2ui/renderers/`: bundled local renderer packages required only by `render/`.
 
@@ -70,7 +82,7 @@ By default this will:
 
 1. Build a sampled eval set from bundled `./data/source`.
 2. Run JSON-based API evaluation.
-3. Compute L1/L2/L3 outputs into `./results`.
+3. Compute L1/L2/L3 outputs into `./results/<protocol-version>/` (default `./results/0.9.1/`).
 4. Skip render/VLM entirely unless `ENABLE_VISUAL_EVAL=1`.
 
 If you want to use the bundled fixed split directly:
@@ -84,6 +96,7 @@ python -u evaluate_api_model.py \
   --max-per-scenario 0 \
   --seed 42 \
   --prompt-mode minimal \
+  --protocol-version 0.9.1 \
   --output-dir ./results \
   --model-concurrency 8 \
   --judge-concurrency 8
@@ -99,15 +112,27 @@ Install optional Python deps first:
 pip install -r requirements-visual.txt
 ```
 
-Start the bundled renderer in another terminal:
+Start the compatible local renderer in another terminal (match `--protocol-version` / `PROTOCOL_VERSION`):
+
+**v0.9.1 (default):**
+
+```bash
+cd render_v091
+npm install
+npm run dev -- --host 127.0.0.1 --port 5174
+```
+
+```bash
+curl -I http://127.0.0.1:5174/
+```
+
+**v0.8 (legacy comparison):**
 
 ```bash
 cd render
 npm install
 npm run dev -- --host 127.0.0.1 --port 5173
 ```
-
-Sanity check:
 
 ```bash
 curl -I http://127.0.0.1:5173/
@@ -119,13 +144,16 @@ Then enable the optional stage:
 ENABLE_VISUAL_EVAL=1 bash run_benchmark.sh
 ```
 
+For a 0.8 visual run, set `PROTOCOL_VERSION=0.8` so results and render URL align with the 0.8 stack.
+
 Or run visual comparison directly:
 
 ```bash
 python visual_compare_models.py \
   --results-dir ./results \
+  --protocol-version 0.9.1 \
   --model-slugs openai__gpt-4o-mini \
-  --render-url http://127.0.0.1:5173/ \
+  --render-url http://127.0.0.1:5174/ \
   --vlm-model moonshotai/kimi-k2.5 \
   --max-workers 2 \
   --output-dir ./results/visual_compare
@@ -135,11 +163,12 @@ python visual_compare_models.py \
 
 - `TASK_SOURCE_DIR`: source task directory, default `./data/source`
 - `EVAL_SPLIT_DIR`: sampled/fixed task directory, default `./data/eval_300`
-- `RESULTS_DIR`: JSON evaluation outputs, default `./results`
+- `RESULTS_DIR`: JSON evaluation output base directory, default `./results` (outputs nest under `<RESULTS_DIR>/<protocol-version>/`)
+- `PROTOCOL_VERSION`: A2UI stack for the run, default `0.9.1` (set `0.8` for legacy comparison)
 - `MODEL_LIST`: space-separated API model list, default `openai/gpt-4o-mini`
 - `ENABLE_VISUAL_EVAL`: set `1` only when you want the optional visual stage
 - `VISUAL_MODEL_SLUGS`: space-separated result folder slugs for visual comparison, default `openai__gpt-4o-mini`
-- `RENDER_URL`: visual renderer URL, default `http://127.0.0.1:5173/`
+- `RENDER_URL`: visual renderer URL; when unset, `run_benchmark.sh` picks port 5174 for 0.9.1 or 5173 for 0.8
 - `MODEL_CONCURRENCY`, `JUDGE_CONCURRENCY`, `VISUAL_CONCURRENCY`: concurrency controls
 
 ## Notes

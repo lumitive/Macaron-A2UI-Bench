@@ -4,7 +4,7 @@
 Example:
   python visual_eval.py \
     --results-dir ./results \
-    --protocol-version 0.8 \
+    --protocol-version 0.9.1 \
     --model-slug openai__gpt-4o-mini \
     --limit 5
 
@@ -40,8 +40,8 @@ import evaluate_api_model as eval_api  # noqa: E402
 from protocol import get_protocol_stack  # noqa: E402
 
 DEFAULT_RESULTS_DIR = Path(__file__).resolve().parent / "results"
-DEFAULT_PROTOCOL_VERSION = "0.8"
-DEFAULT_RENDER_URL = "http://127.0.0.1:5173/"
+DEFAULT_PROTOCOL_VERSION = "0.9.1"
+DEFAULT_RENDER_URL = "http://127.0.0.1:5174/"
 DEFAULT_VLM_MODEL = "qwen/qwen3-vl-235b-a22b-instruct"
 DEFAULT_BASE_URL = "https://openrouter.ai/api/v1"
 
@@ -115,7 +115,7 @@ def _parse_args() -> argparse.Namespace:
         "--protocol-version",
         choices=["0.8", "0.9.1"],
         default=DEFAULT_PROTOCOL_VERSION,
-        help="A2UI protocol stack (default 0.8 until cutover). Selects render_check, "
+        help="A2UI protocol stack (default 0.9.1). Selects render_check, "
         "default render URL, results subdir, and VLM copy.",
     )
     parser.add_argument("--model-slug", type=str, default="openai__gpt-4o-mini")

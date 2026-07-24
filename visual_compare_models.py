@@ -42,7 +42,7 @@ def _parse_args() -> argparse.Namespace:
         "--protocol-version",
         choices=["0.8", "0.9.1"],
         default=visual_eval.DEFAULT_PROTOCOL_VERSION,
-        help="A2UI protocol stack (default 0.8 until cutover). Selects render_check, "
+        help="A2UI protocol stack (default 0.9.1). Selects render_check, "
         "default render URL, results subdir, and VLM copy.",
     )
     parser.add_argument("--model-slugs", nargs="+", default=DEFAULT_MODEL_SLUGS)
