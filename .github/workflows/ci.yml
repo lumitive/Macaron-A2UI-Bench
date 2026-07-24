@@ -1,0 +1,127 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            requirements.txt
+            requirements-visual.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install -r requirements-visual.txt
+
+      - name: Syntax check
+        run: |
+          python -m py_compile \
+            evaluate_api_model.py \
+            prepare_eval_split.py \
+            render_check.py \
+            visual_eval.py \
+            visual_compare_models.py
+
+      - name: Import bundled a2ui lint
+        run: |
+          python - <<'PY'
+          import sys
+          from pathlib import Path
+
+          root = Path.cwd()
+          sys.path.insert(0, str(root / "vendor"))
+          from a2ui_demo.server.a2ui_lint import validate
+
+          assert callable(validate)
+          print("a2ui_lint import ok")
+          PY
+
+      - name: CLI help smoke
+        run: |
+          python prepare_eval_split.py --help
+          python evaluate_api_model.py --help
+
+      - name: Import render_check
+        run: |
+          python - <<'PY'
+          from render_check import render_check
+
+          assert callable(render_check)
+          ok, issues = render_check([])
+          assert ok is True
+          assert issues == []
+          print("render_check import ok")
+          PY
+
+      - name: Prepare eval split smoke
+        run: |
+          python prepare_eval_split.py \
+            --input-dir ./data/source \
+            --output-dir ./tmp_ci_eval_split \
+            --per-difficulty 4 \
+            --seed 42
+          test -f ./tmp_ci_eval_split/manifest.json
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path("tmp_ci_eval_split")
+          manifest = json.loads((root / "manifest.json").read_text())
+          assert isinstance(manifest, dict)
+          assert manifest.get("total_selected") == 12  # 4/difficulty * 3 difficulties
+          task_files = list(root.glob("*_tasks.json"))
+          assert len(task_files) == 4, "expected one task file per source"
+          total = 0
+          for path in task_files:
+              tasks = json.loads(path.read_text())
+              assert isinstance(tasks, list)
+              total += len(tasks)
+          assert total == 12, f"expected 12 sampled tasks, got {total}"
+          print(f"sampled {total} tasks across {len(task_files)} files")
+          PY
+
+  render:
+    name: Render build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: render
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: render/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
