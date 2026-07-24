@@ -436,18 +436,6 @@ def _setup_env() -> None:
         _load_env_file(root / ".env")
 
 
-def _ensure_a2ui_lint_import():
-    if not (_A2UI_DEMO_ROOT / "server" / "a2ui_lint" / "__init__.py").exists():
-        raise RuntimeError(
-            "Missing bundled a2ui_demo dependency. Restore vendor/a2ui_demo or set A2UI_DEMO_ROOT to a compatible checkout."
-        )
-    a2ui_demo_parent = _A2UI_DEMO_ROOT.parent
-    if str(a2ui_demo_parent) not in sys.path:
-        sys.path.insert(0, str(a2ui_demo_parent))
-    from a2ui_demo.server.a2ui_lint import validate  # type: ignore
-    return validate
-
-
 def _extract_json_object(text: str) -> dict[str, Any] | None:
     def _is_model_output_dict(obj: dict[str, Any]) -> bool:
         return any(key in obj for key in ("text_response", "a2ui", "a2ui_messages"))
@@ -903,8 +891,29 @@ def _a2ui_summary(messages: list[dict]) -> str:
         elif "updateDataModel" in msg:
             dm = msg["updateDataModel"]
             sid = dm.get("surfaceId", "?")
-            keys = [x.get("key", "") for x in dm.get("contents", [])]
-            lines.append(f"updateDataModel({sid}): keys={keys}")
+            contents = dm.get("contents")
+            if isinstance(contents, list):
+                # 0.8-style contents[] still summarize by key when present.
+                keys = [
+                    x.get("key", "") for x in contents if isinstance(x, dict)
+                ]
+                lines.append(f"updateDataModel({sid}): keys={keys}")
+            else:
+                # 0.9.1: path + value object (no contents array).
+                path = dm.get("path", "/")
+                value = dm.get("value")
+                if isinstance(value, dict):
+                    vkeys = list(value.keys())
+                    lines.append(
+                        f"updateDataModel({sid}): path={path} value_keys={vkeys}"
+                    )
+                else:
+                    preview = repr(value)
+                    if len(preview) > 80:
+                        preview = preview[:77] + "..."
+                    lines.append(
+                        f"updateDataModel({sid}): path={path} value={preview}"
+                    )
         elif "beginRendering" in msg:
             lines.append(f"beginRendering({msg['beginRendering'].get('surfaceId', '?')})")
         elif "createSurface" in msg:

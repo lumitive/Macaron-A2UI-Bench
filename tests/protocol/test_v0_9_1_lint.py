@@ -85,3 +85,38 @@ def test_accepts_v0_9_version():
         msg["version"] = "v0.9"
     result = validate(messages)
     assert result.errors == []
+
+
+def test_update_without_createSurface_fails():
+    result = validate(
+        [
+            {
+                "version": "v0.9.1",
+                "updateComponents": {
+                    "surfaceId": "main",
+                    "components": [
+                        {"id": "root", "component": "Text", "text": "hi"},
+                    ],
+                },
+            }
+        ]
+    )
+    codes = [d.code.value for d in result.errors]
+    assert "LINT_MESSAGE_ORDER" in codes
+
+
+def test_updateDataModel_without_createSurface_fails():
+    result = validate(
+        [
+            {
+                "version": "v0.9.1",
+                "updateDataModel": {
+                    "surfaceId": "main",
+                    "path": "/",
+                    "value": {"x": 1},
+                },
+            }
+        ]
+    )
+    codes = [d.code.value for d in result.errors]
+    assert "LINT_MESSAGE_ORDER" in codes

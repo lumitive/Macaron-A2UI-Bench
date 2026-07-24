@@ -76,6 +76,8 @@ def validate(
 
     component_ids: set[str] = set()
     saw_any_components = False
+    saw_create_surface = False
+    saw_component_or_data_update = False
     primary_surface_id: str | None = None
 
     for msg_idx, msg in enumerate(messages):
@@ -180,13 +182,16 @@ def validate(
                 )
 
         if action == "createSurface":
+            saw_create_surface = True
             _check_create_surface(payload, f"{base}/createSurface", result)
         elif action == "updateComponents":
+            saw_component_or_data_update = True
             saw = _check_update_components(
                 payload, f"{base}/updateComponents", result, component_ids
             )
             saw_any_components = saw_any_components or saw
         elif action == "updateDataModel":
+            saw_component_or_data_update = True
             _check_update_data_model(payload, f"{base}/updateDataModel", result)
         elif action == "deleteSurface":
             if "surfaceId" not in payload:
@@ -198,6 +203,20 @@ def validate(
                         path=f"{base}/deleteSurface",
                     )
                 )
+
+    if saw_component_or_data_update and not saw_create_surface:
+        result.add(
+            Diagnostic(
+                S.ERROR,
+                C.LINT_MESSAGE_ORDER,
+                "updateComponents/updateDataModel without createSurface in the "
+                "same batch",
+                suggestion=(
+                    "Include a createSurface message before component or data "
+                    "model updates."
+                ),
+            )
+        )
 
     if saw_any_components and "root" not in component_ids:
         result.add(

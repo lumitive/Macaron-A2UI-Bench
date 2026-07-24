@@ -39,6 +39,8 @@ def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
     surface_ids: list[str] = []
     component_ids: set[str] = set()
     saw_any_components = False
+    saw_create_surface = False
+    saw_component_or_data_update = False
 
     for idx, msg in enumerate(a2ui_messages):
         if not isinstance(msg, dict):
@@ -63,6 +65,7 @@ def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
                 _collect_surface_id(msg[key], surface_ids)
 
         if "createSurface" in msg:
+            saw_create_surface = True
             cs = msg["createSurface"]
             if isinstance(cs, dict):
                 catalog_id = cs.get("catalogId")
@@ -77,7 +80,11 @@ def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
                         f"is not the locked Phase-1 basic catalog"
                     )
 
+        if "updateDataModel" in msg:
+            saw_component_or_data_update = True
+
         if "updateComponents" in msg:
+            saw_component_or_data_update = True
             uc = msg["updateComponents"]
             if not isinstance(uc, dict):
                 issues.append(
@@ -119,6 +126,12 @@ def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
                         f"a2ui[{idx}].components[{ci}] (id={cid!r}): "
                         "component discriminator must be a string"
                     )
+
+    if saw_component_or_data_update and not saw_create_surface:
+        issues.append(
+            "updateComponents/updateDataModel without createSurface in the same "
+            "batch — v0.9.1 requires createSurface before component/data updates"
+        )
 
     if len(surface_ids) > 1:
         issues.append(

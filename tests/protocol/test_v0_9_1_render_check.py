@@ -80,6 +80,41 @@ def test_createSurface_requires_catalogId():
     assert any("catalogId" in i for i in issues)
 
 
+def test_updateComponents_without_createSurface_fails():
+    ok, issues = render_check(
+        [
+            {
+                "version": "v0.9.1",
+                "updateComponents": {
+                    "surfaceId": "main",
+                    "components": [
+                        {"id": "root", "component": "Text", "text": "hi"},
+                    ],
+                },
+            }
+        ]
+    )
+    assert not ok
+    assert any("createSurface" in i for i in issues)
+
+
+def test_updateDataModel_without_createSurface_fails():
+    ok, issues = render_check(
+        [
+            {
+                "version": "v0.9.1",
+                "updateDataModel": {
+                    "surfaceId": "main",
+                    "path": "/",
+                    "value": {"x": 1},
+                },
+            }
+        ]
+    )
+    assert not ok
+    assert any("createSurface" in i for i in issues)
+
+
 def test_key_wrapped_component_fails():
     ok, issues = render_check(
         [

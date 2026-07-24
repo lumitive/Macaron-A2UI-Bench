@@ -65,8 +65,8 @@ def test_a2ui_summary_includes_0_9_1_flat_components():
             "version": "v0.9",
             "updateDataModel": {
                 "surfaceId": "s1",
-                "path": "/",
-                "contents": [{"key": "x", "valueString": "1"}],
+                "path": "/form",
+                "value": {"name": "Ada", "count": 3},
             },
         },
     ]
@@ -76,6 +76,27 @@ def test_a2ui_summary_includes_0_9_1_flat_components():
     assert "updateComponents" in summary
     assert "Text" in summary
     assert "updateDataModel" in summary
+    assert "path=/form" in summary
+    assert "value_keys=" in summary
+    assert "name" in summary
+    assert "count" in summary
+
+
+def test_a2ui_summary_updateDataModel_contents_fallback():
+    """0.8-style contents[] on updateDataModel still summarizes by key."""
+    messages = [
+        {
+            "updateDataModel": {
+                "surfaceId": "s1",
+                "contents": [{"key": "x"}, {"key": "y"}],
+            }
+        }
+    ]
+    summary = _a2ui_summary(messages)
+    assert "updateDataModel" in summary
+    assert "keys=" in summary
+    assert "x" in summary
+    assert "y" in summary
 
 
 def test_a2ui_summary_still_handles_0_8_shapes():
