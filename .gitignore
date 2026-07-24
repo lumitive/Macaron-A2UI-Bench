@@ -13,3 +13,5 @@ visual_compare_*/
 tmp_visual_*/
 _tmp_visual_*/
 screenshots/
+
+.worktrees/
