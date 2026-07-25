@@ -1,31 +1,58 @@
 ---
-description: Mandatory pre-commit sync and pr-test-analyzer check
+description: Auto sync, analyze, commit, PR, and merge — minimize ask-backs
 alwaysApply: true
 ---
 
-# Git commit workflow
+# Git ship workflow (commit → PR → merge)
 
-When the user asks to commit (or the agent is about to create a git commit), do **all** of the following **in order**. Do not run `git commit` until every step succeeds.
+Default stance: **maximize automation**. When the user asks to commit, ship a fix, update a PR, or otherwise land work, run the **full pipeline end-to-end** without pausing for confirmation between steps.
 
-## 1. Sync with remote first
+Do **not** ask whether to push, open a PR, wait on CI, or merge. Just do it and report the PR URL + CI/merge result. Only stop when a hard blocker below applies.
 
-1. Identify the integration base branch (prefer `main` / `master` on the primary push remote, e.g. `lumitive` or `origin`).
-2. `git fetch` that remote (and the current branch’s upstream if set).
-3. If the current branch is behind the base or its upstream, **rebase or merge** onto the updated tip before staging/committing. Do not commit on a stale base.
-4. If sync fails (network/auth), stop and report; do not commit.
+## Pipeline (in order)
 
-## 2. Run `/pr-test-analyzer` before commit
+### 1. Sync with remote
 
-1. Launch the `pr-test-analyzer` subagent (`Task` with `subagent_type: "pr-test-analyzer"`) over the changes about to be committed (staged + intended unstaged files, or the PR/branch diff when on a feature branch).
-2. Treat **critical gaps (rating 8–10)** as blockers: fix them or get an explicit user override before committing.
-3. Summarize Important findings (5–7) in the commit context or follow-up; do not ignore Critical items silently.
+1. Identify the integration base (`main` / `master` on the primary push remote, e.g. `lumitive` or `origin`).
+2. `git fetch` that remote and the current branch upstream.
+3. If behind base/upstream, rebase (prefer) or merge onto the updated tip before committing.
+4. Sync failure (network/auth) → stop and report; do not commit.
 
-## 3. Then commit
+### 2. `/pr-test-analyzer`
 
-Only after sync and pr-test-analyzer complete, follow the normal commit protocol (status/diff/log → stage → commit → verify). Never skip hooks (`--no-verify`) unless the user explicitly requests it.
+1. Run `Task` with `subagent_type: "pr-test-analyzer"` on the pending diff (or branch vs base).
+2. Critical gaps (8–10) are blockers: fix them (or only then ask for an explicit override).
+3. Important (5–7): note briefly; do not block the pipeline.
+
+### 3. Commit
+
+After sync + analyzer: status/diff/log → stage → commit → verify. Use `ALLOW_GIT_COMMIT=1` when the project hook requires it. Never `--no-verify` unless the user explicitly requests it.
+
+### 4. Push + PR (automatic)
+
+1. Push the branch to the primary remote (`-u` if needed). After a rebase rewrite, use `--force-with-lease` on the feature branch (never on `main`/`master`).
+2. If no open PR exists for the branch → `gh pr create` against the base.
+3. If a PR exists → push updates it; do not ask “should I update the PR?”.
+4. Return the PR URL in the final summary.
+
+### 5. CI + merge (automatic)
+
+1. Watch required checks on the PR (`gh pr checks` / `gh run watch`) until complete.
+2. If CI fails: diagnose, fix, re-run analyzer + commit + push, and re-watch — without asking to continue.
+3. When checks are green and the PR is mergeable → **merge it** (`gh pr merge` with repo-appropriate strategy; prefer squash if the repo defaults to it, otherwise merge commit). Delete the remote feature branch when merge supports it.
+4. Fast-forward or checkout local `main` from the remote after merge when useful; report the merge commit / PR URL.
+
+## Hard blockers (only then stop and ask)
+
+- Secrets / credentials would be committed
+- Force-push to `main` / `master`, hard reset of shared history, or other destructive git ops
+- Critical analyzer gaps (8–10) that you cannot fix in-repo
+- Merge blocked by permissions, required reviews you cannot satisfy, or unresolved merge conflicts after a reasonable resolve attempt
+- CI still red after a focused fix attempt and the next step is ambiguous
 
 ## Do not
 
-- Commit immediately when the user says “commit” without sync + analyzer
-- Amend/push as a substitute for this checklist
-- Treat “no new tests in this commit” as a skip; still run the analyzer on the diff
+- Ask “push / open PR / merge?” for routine feature-branch work
+- Stop after commit and wait for the user to say “update the PR” or “merge”
+- Treat “no new tests” as skipping the analyzer
+- Skip sync before commit
