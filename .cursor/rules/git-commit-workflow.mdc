@@ -1,5 +1,5 @@
 ---
-description: Auto sync, analyze, commit, PR, and merge — minimize ask-backs
+description: Auto sync, full /review-pr, commit, PR, and merge — minimize ask-backs
 alwaysApply: true
 ---
 
@@ -18,19 +18,40 @@ Do **not** ask whether to push, open a PR, wait on CI, or merge. Just do it and 
 3. If behind base/upstream, rebase (prefer) or merge onto the updated tip before committing.
 4. Sync failure (network/auth) → stop and report; do not commit.
 
-### 2. `/pr-test-analyzer`
+### 2. Full `/review-pr` (mandatory before every commit)
 
-1. Run `Task` with `subagent_type: "pr-test-analyzer"` on the pending diff (or branch vs base).
-2. Critical gaps (8–10) are blockers: fix them (or only then ask for an explicit override).
-3. Important (5–7): note briefly; do not block the pipeline.
+Run a **comprehensive** PR review covering **all** aspects — do not skip any, and do not substitute with `/pr-test-analyzer` alone:
+
+1. **tests** — `Task` `subagent_type: "pr-test-analyzer"`
+2. **code** — `Task` `subagent_type: "code-reviewer"`
+3. **errors** — `Task` `subagent_type: "silent-failure-hunter"`
+4. **comments** — `Task` `subagent_type: "comment-analyzer"`
+5. **types** — `Task` `subagent_type: "type-design-analyzer"` (run even if no obvious new types; report N/A if none)
+6. **simplify** — `Task` `subagent_type: "code-simplifier"` (**recommend-only** before commit; do not mutate the tree inside the gate)
+
+Prefer launching these in **parallel**. Each agent must return a usable report (OK / N/A / findings). If any agent **fails, times out, or returns no usable report** → hard blocker; do not commit.
+
+#### What counts as Critical (blocks commit)
+
+Treat as **Critical** (must fix or get explicit user override before `ALLOW_GIT_COMMIT=1`):
+
+- **tests**: gap rating **8–10**, or aspect verdict **BLOCK**
+- **code / errors / comments / types / simplify**: any finding labeled **Critical**, aspect verdict **BLOCK**, or confidence **≥ 80** on a must-fix issue
+- Incomplete agent run (see above)
+
+**Important** / Suggestions never block unless the user overrides. Fix Important when cheap; note the rest in the ship summary.
+
+Scope each agent on the pending diff (staged + intended files, or branch vs base). After applying any post-review code edits, **re-run** the affected aspects (or full `/review-pr`) on the new diff before commit.
 
 ### 3. Commit
 
-After sync + analyzer: status/diff/log → stage → commit → verify. Use `ALLOW_GIT_COMMIT=1` when the project hook requires it. Never `--no-verify` unless the user explicitly requests it.
+After sync + full `/review-pr` with no unresolved Critical items: status/diff/log → stage → commit → verify.
+
+Set `ALLOW_GIT_COMMIT=1` only after that gate passes (this is the Cursor `beforeShellExecution` bypass — it is **not** the same as git `--no-verify`). Never use `--no-verify` unless the user explicitly requests it.
 
 ### 4. Push + PR (automatic)
 
-1. Push the branch to the primary remote (`-u` if needed). After a rebase rewrite, use `--force-with-lease` on the feature branch (never on `main`/`master`).
+1. Push the branch to the primary remote (`-u` if needed). After a history rewrite on a feature branch that was **already pushed**, update with `--force-with-lease` only: `git fetch` first, never bare `--force`, never force-push `main`/`master`. If lease rejects or the branch is clearly shared by others → hard blocker (ask).
 2. If no open PR exists for the branch → `gh pr create` against the base.
 3. If a PR exists → push updates it; do not ask “should I update the PR?”.
 4. Return the PR URL in the final summary.
@@ -38,15 +59,17 @@ After sync + analyzer: status/diff/log → stage → commit → verify. Use `ALL
 ### 5. CI + merge (automatic)
 
 1. Watch required checks on the PR (`gh pr checks` / `gh run watch`) until complete.
-2. If CI fails: diagnose, fix, re-run analyzer + commit + push, and re-watch — without asking to continue.
-3. When checks are green and the PR is mergeable → **merge it** (`gh pr merge` with repo-appropriate strategy; prefer squash if the repo defaults to it, otherwise merge commit). Delete the remote feature branch when merge supports it.
+2. If CI fails: diagnose, fix, re-run full `/review-pr` + commit + push, and re-watch — without asking to continue.
+3. When checks are green and the PR is mergeable → **merge it** via `gh pr merge` using the repo default; if unclear, prefer squash. Delete the remote feature branch when merge supports it.
 4. Fast-forward or checkout local `main` from the remote after merge when useful; report the merge commit / PR URL.
 
 ## Hard blockers (only then stop and ask)
 
 - Secrets / credentials would be committed
 - Force-push to `main` / `master`, hard reset of shared history, or other destructive git ops
-- Critical analyzer gaps (8–10) that you cannot fix in-repo
+- Critical `/review-pr` findings (per the definition above) that you cannot fix in-repo
+- Any of the six review agents failed / timed out / returned no usable report
+- `--force-with-lease` rejected or updating a shared feature branch is unsafe
 - Merge blocked by permissions, required reviews you cannot satisfy, or unresolved merge conflicts after a reasonable resolve attempt
 - CI still red after a focused fix attempt and the next step is ambiguous
 
@@ -54,5 +77,6 @@ After sync + analyzer: status/diff/log → stage → commit → verify. Use `ALL
 
 - Ask “push / open PR / merge?” for routine feature-branch work
 - Stop after commit and wait for the user to say “update the PR” or “merge”
-- Treat “no new tests” as skipping the analyzer
+- Skip full `/review-pr`, reduce it to tests-only, or treat docs/config-only as skipping any of the six aspects
+- Let `code-simplifier` mutate files inside the pre-commit review gate without a re-review
 - Skip sync before commit
