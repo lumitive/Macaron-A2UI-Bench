@@ -1,6 +1,7 @@
 #!/bin/bash
-# Remind / gate git commit until sync + pr-test-analyzer policy is acknowledged.
-# Bypass for this session: ALLOW_GIT_COMMIT=1
+# Gate git commit until sync + pr-test-analyzer policy is done.
+# After that, the agent should continue push → PR → CI → merge automatically.
+# Bypass: ALLOW_GIT_COMMIT=1
 set -euo pipefail
 
 input=$(cat)
@@ -20,12 +21,13 @@ python3 - <<'PY'
 import json
 print(json.dumps({
   "permission": "ask",
-  "user_message": "Pre-commit policy: sync with remote, then run /pr-test-analyzer, then approve this commit.",
+  "user_message": "Pre-commit gate: sync + /pr-test-analyzer required, then full ship (push/PR/CI/merge) continues automatically.",
   "agent_message": (
-      "Blocked pending commit workflow. Before allowing git commit: "
+      "Blocked pending ship workflow. Before ALLOW_GIT_COMMIT=1: "
       "(1) git fetch and sync/rebase onto updated base/upstream; "
-      "(2) run Task subagent_type=pr-test-analyzer on the pending diff and resolve critical (8-10) gaps; "
-      "(3) re-run the commit with ALLOW_GIT_COMMIT=1 only after both steps are done."
+      "(2) run Task subagent_type=pr-test-analyzer and resolve critical (8-10) gaps; "
+      "(3) commit with ALLOW_GIT_COMMIT=1, then automatically push, create/update PR, "
+      "watch CI, and merge when green — do not ask the user between those steps."
   ),
 }))
 PY
