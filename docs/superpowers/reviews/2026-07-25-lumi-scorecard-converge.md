@@ -6,7 +6,9 @@ Applied to:
 - Track plan one-liners (evidence-gated score updates)
 - This review set under `docs/superpowers/reviews/2026-07-25-lumi-scorecard-*.md`
 
-**Process:** Sequential red → blue → edits (not parallel).
+**Process:** Sequential red → blue → edits → re-attack (**loop-until-dry**, not parallel).  
+**Retrospective:** this run already satisfied `loop-until-dry` (now forced by `.cursor/rules/red-blue-adversarial.mdc`).  
+**This run:** round 1 (red→blue→apply) → `/review-pr` silent-failure Critical (fail-open recompute) → round 2 (asserting `scorecard_recompute.py` + doc fixes → re-pass Critical=0) → **dry**.
 
 | ID | Severity | Disposition | Fix |
 |----|----------|-------------|-----|
