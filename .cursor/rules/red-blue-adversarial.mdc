@@ -1,0 +1,66 @@
+---
+description: Mandatory red/blue adversarial review — loop-until-dry
+alwaysApply: true
+---
+
+# Red / blue adversarial review (mandatory)
+
+## When this rule runs (forced)
+
+Run sequential red→blue under **`loop-until-dry`** whenever **any** of these is true:
+
+1. User asks for **红蓝对抗** / **red-blue** / **adversarial review**
+2. Reviewing or editing **design docs, scorecards, specs, plans, or partner-facing claim surfaces** (algorithms, evidence, gates, indices, public narrative) — not typo/formatting-only
+3. Shipping a commit that is or claims a **red/blue converge**, or that materially changes those claim surfaces
+
+Severity labels in memos: **blocker ≡ Critical**; high/medium → **Important** (prefer Critical/Important in new memos).
+
+## Forced rule: `loop-until-dry`
+
+**MUST** loop the full cycle until **dry**.  
+**MUST NOT** claim dry / “converge done” / “红蓝完成” unless the dry table below is fully satisfied (including a real re-attack when Apply changed anything).
+
+### Cycle (repeat; count rounds)
+
+1. **Red** — attack: fail-open claims, missing algorithms, gameable gates, commercial gaps, evidence mismatch.
+2. **Blue** — defend/refine: ACCEPT / PARTIAL / REJECT with concrete fixes.
+3. **Apply** — edit living docs / code / recompute so fixes are real.
+4. **Re-attack** — mandatory after **any** Apply that changed claim-relevant content: red and/or silent-failure / claim-hunter pass on the **post-fix** surface. Look for regressions and residual Critical.
+
+If round 1 finds **0 Critical and 0 Important** and Apply makes **no** claim-relevant edits → re-attack may be a short confirmation pass, still recorded. Otherwise: Apply ⇒ Re-attack is **not optional**.
+
+Stop only when **dry**.
+
+### Dry (exit criteria) — all must hold
+
+| Gate | Required |
+|------|----------|
+| Critical | **0** open. Closed only by **fix**, **REJECT + written disposition**, or **recorded user override**. PARTIAL with residual work stays **open**. |
+| Important | Fixed when in-scope/cheap, **or** written disposition (defer + owner/track). Deferrals with disposition count as closed for dry. |
+| Re-pass | A post-Apply attack was actually run (when Apply changed claim content) and finds **no new Critical** and no unresolved prior Critical |
+| Claims | Partner-facing narrative matches Evidence + asserting checks (no fail-open) |
+| Attestation | `*-converge.md` (or equivalent review note) records **round count** + checklist that the four gates above hold |
+
+“Anything actionable” means: dry table not yet satisfied. Deferred Important with disposition ≠ open actionable.
+
+### Hard bans
+
+- **No parallel red∥blue** as the primary pass. Sequential only.
+- **No single-shot** “red → blue → commit” **without** a completed re-attack (when Apply changed claim content) **and** dry attestation.
+- **No checkbox converge** — plan/TODO done ≠ dry; living source of truth (SoT) + evidence/recompute must reflect fixes.
+- Do **not** ask to skip `loop-until-dry`. Early stop only for hard blockers (secrets, explicit user override, external permission) — then report **not dry** explicitly.
+
+### Artifacts (MUST)
+
+Write under `docs/superpowers/reviews/` (names may vary; contents required):
+
+- `*-red-memo.md`
+- `*-blue-memo.md`
+- `*-converge.md` — dispositions + **loop-until-dry** note: rounds + dry checklist attestation
+
+Mark superseded attack memos historical once converge lands; living docs remain authority.
+
+### Relation to `/review-pr`
+
+`loop-until-dry` covers **design / scorecard / claim** adversarial review.  
+Ship commits still need full `/review-pr` per `git-commit-workflow.mdc`. Critical from `/review-pr` on the same claim surface ⇒ **not dry** → continue the cycle (or fix + re-attack) before claiming converge complete.

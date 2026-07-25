@@ -7,6 +7,8 @@ alwaysApply: true
 
 Default stance: **maximize automation**. When the user asks to commit, ship a fix, update a PR, or otherwise land work, run the **full pipeline end-to-end** without pausing for confirmation between steps.
 
+If the change set is (or claims) a **red/blue / 红蓝对抗** converge, **or** materially changes design docs / scorecards / specs / plans / partner-facing claim surfaces: **`loop-until-dry` is mandatory** first — see `red-blue-adversarial.mdc`. Do not ship while **not dry**.
+
 Do **not** ask whether to push, open a PR, wait on CI, or merge. Just do it and report the PR URL + CI/merge result. Only stop when a hard blocker below applies.
 
 ## Pipeline (in order)
@@ -69,6 +71,7 @@ Set `ALLOW_GIT_COMMIT=1` only after that gate passes (this is the Cursor `before
 - Force-push to `main` / `master`, hard reset of shared history, or other destructive git ops
 - Critical `/review-pr` findings (per the definition above) that you cannot fix in-repo
 - Any of the six review agents failed / timed out / returned no usable report
+- **Red/blue / claim-surface material change is not dry** (`loop-until-dry` unmet — see `red-blue-adversarial.mdc`)
 - `--force-with-lease` rejected or updating a shared feature branch is unsafe
 - Merge blocked by permissions, required reviews you cannot satisfy, or unresolved merge conflicts after a reasonable resolve attempt
 - CI still red after a focused fix attempt and the next step is ambiguous
