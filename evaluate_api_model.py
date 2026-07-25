@@ -96,7 +96,7 @@ SCENARIO_DEFS = {
     "S5": "Transaction closure & failure recovery (primarily multiwoz/sgd)",
 }
 
-L2_RUBRIC_HINTS = {
+L2_RUBRIC_HINTS_0_8 = {
     "S1": {
         "D2-1": "Good: user expresses ambivalence/emotion, model presents parallel options via selection UI; Bad: model has converged on advice yet still pops a selection card.",
         "D2-2": "Good: emotion branching uses clearly selectable, submittable interactive components; Bad: only static Text wrapping text to mimic interaction.",
@@ -133,6 +133,48 @@ L2_RUBRIC_HINTS = {
         "D2-5": "Good: confirm action contains complete booking info in context; Bad: critical operation has no action.",
     },
 }
+
+# 0.9.1 terminology: updateDataModel (not dataModelUpdate); ChoicePicker for selection.
+L2_RUBRIC_HINTS_0_9_1 = {
+    "S1": {
+        "D2-1": "Good: user expresses ambivalence/emotion, model presents parallel options via ChoicePicker; Bad: model has converged on advice yet still pops a selection card.",
+        "D2-2": "Good: emotion branching uses clearly selectable, submittable interactive components; Bad: only static Text wrapping text to mimic interaction.",
+        "D2-3": "Good: option labels strictly come from choices in text_response; Bad: UI invents options not mentioned in text.",
+        "D2-4": "Good: updateDataModel records current emotional state; Bad: no state management at all.",
+        "D2-5": "Good: interactive controls have action.name and context passes back user selection; Bad: actionable elements lack action.",
+    },
+    "S2": {
+        "D2-1": "Good: user expresses willingness to act, model triggers commitment/assessment UI; Bad: still in exploratory discussion yet pushes commitment card.",
+        "D2-2": "Good: uses scalar assessment or commitment-type interactive components; Bad: commitment scenario only has static display without interactive components.",
+        "D2-3": "Good: quantified ranges or commitment options match dimensions built in text; Bad: endpoints/options are fabricated.",
+        "D2-4": "Good: updateDataModel records commitment content and timing; Bad: commitment flow has no state record.",
+        "D2-5": "Good: submit action contains commitment payload in context; Bad: only 'submitted' with no concrete data passed back.",
+    },
+    "S3": {
+        "D2-1": "Good: triggers form UI when user needs to fill in information; Bad: collects slots via text Q&A without providing input components.",
+        "D2-2": "Good: uses editable input components to collect parameters; Bad: uses plain Text to display questions but gives no input entry.",
+        "D2-3": "Good: form fields match information requested in text; Bad: form includes extra fields not mentioned in text.",
+        "D2-4": "Good: updateDataModel records collected parameters; Bad: multi-turn collection but no state accumulation.",
+        "D2-5": "Good: submit action contains complete input values in context; Bad: cannot track input values after submission.",
+    },
+    "S4": {
+        "D2-1": "Good: triggers result display UI when search results exist; Bad: has results but doesn't trigger structured display.",
+        "D2-2": "Good: candidates displayed in structured, comparable, actionable UI; Bad: only fragmented text.",
+        "D2-3": "Good: displayed candidates match count and content described in text; Bad: text says 3 candidates but UI shows only 2.",
+        "D2-4": "Good: updateDataModel records search criteria and results; Bad: candidate data only in text with no structured record.",
+        "D2-5": "Good: selecting a candidate's interactive element passes back candidate ID or equivalent; Bad: selection leads to flow stall.",
+    },
+    "S5": {
+        "D2-1": "Good: triggers confirm/cancel UI during transaction closure; Bad: closure phase has no interactive components.",
+        "D2-2": "Good: confirmation page has clear confirm/cancel/modify actions; Bad: only text summary without executable operations.",
+        "D2-3": "Good: confirmation info matches booking details in text; Bad: confirmation page contradicts text.",
+        "D2-4": "Good: updateDataModel records booking status; Bad: no state update after confirmation.",
+        "D2-5": "Good: confirm action contains complete booking info in context; Bad: critical operation has no action.",
+    },
+}
+
+# Back-compat alias (0.8 wording). Prefer L2_RUBRIC_HINTS_0_8 / _0_9_1 via protocol version.
+L2_RUBRIC_HINTS = L2_RUBRIC_HINTS_0_8
 
 L3_RUBRIC_HINTS = {
     "S1": {
@@ -356,7 +398,7 @@ def resolve_output_dir(base: Path, protocol_version: str) -> Path:
 
 
 def strip_episode_gt_a2ui(episode_turns: list[dict]) -> list[dict]:
-    """Drop gold ``gt_a2ui`` from episode turns (0.9.1 depth path)."""
+    """Drop all gold ``gt_a2ui`` from episode turns (unconditional strip)."""
     cleaned: list[dict] = []
     for turn in episode_turns:
         t = dict(turn)
@@ -365,16 +407,69 @@ def strip_episode_gt_a2ui(episode_turns: list[dict]) -> list[dict]:
     return cleaned
 
 
+def filter_episode_gt_a2ui(
+    episode_turns: list[dict],
+    *,
+    validate_fn,
+) -> list[dict]:
+    """Keep ``gt_a2ui`` only when it validates as 0.9.1; strip 0.8-shaped gold.
+
+    Used on the 0.9.1 depth path (``stack.strip_gt_a2ui=True``): retained gold
+    must pass the active stack validator (basic or lumi catalog).
+    """
+    cleaned: list[dict] = []
+    for turn in episode_turns:
+        t = dict(turn)
+        gt = t.get("gt_a2ui")
+        if not gt:
+            t.pop("gt_a2ui", None)
+            cleaned.append(t)
+            continue
+        try:
+            result = validate_fn(gt)
+            ok = bool(getattr(result, "is_valid", False))
+        except Exception:
+            ok = False
+        if ok:
+            t["gt_a2ui"] = gt
+        else:
+            t.pop("gt_a2ui", None)
+        cleaned.append(t)
+    return cleaned
+
+
+_FULL_ENVELOPE_SUMMARY_091 = """
+# Wire envelope (server → client)
+
+Each message is a JSON object with `"version": "v0.9.1"` and exactly one action:
+- createSurface: `{surfaceId, catalogId}` — create a surface (required before updates)
+- updateComponents: `{surfaceId, components[]}` — flat component list; include id `"root"`
+- updateDataModel: `{surfaceId, value, path?}` — write data model values (native JSON)
+- deleteSurface: `{surfaceId}` — remove a surface
+
+Do NOT use 0.8 keys: beginRendering, surfaceUpdate, dataModelUpdate.
+Prefer ChoicePicker for selection (not SelectionList).
+""".strip()
+
+
+def _build_full_generation_guide_091(stack: ProtocolStack) -> str:
+    """Assemble full 0.9.1 generation guide at runtime (no huge checked-in file)."""
+    return "\n\n".join(
+        [
+            stack.generation_guide.strip(),
+            _FULL_ENVELOPE_SUMMARY_091,
+            stack.component_schema_context.strip(),
+        ]
+    ).strip()
+
+
 def resolve_generation_guide(*, prompt_mode: str, stack: ProtocolStack) -> str:
-    """Select generation guide from the protocol stack; hard-error full+0.9.1."""
-    if prompt_mode == "full" and stack.version == "0.9.1":
-        raise ValueError(
-            "prompt_mode=full is not supported with protocol_version=0.9.1; "
-            "use --prompt-mode minimal (Phase 1 has no 0.9.1 full prompt)"
-        )
+    """Select generation guide from the protocol stack (full supported on both)."""
     if prompt_mode in ("minimal", "sft"):
         return stack.generation_guide
-    # full + 0.8 only
+    if stack.version == "0.9.1":
+        return _build_full_generation_guide_091(stack)
+    # full + 0.8
     return _build_generation_guide("full")
 
 
@@ -934,8 +1029,14 @@ def _truncate_json_for_prompt(payload: Any, *, max_chars: int) -> str:
     return raw[:head] + "\n... (truncated) ...\n" + raw[-tail:]
 
 
-def _build_l2_rubric_hints(scenario_id: str) -> str:
-    hints = L2_RUBRIC_HINTS[scenario_id]
+def _l2_rubric_hints_for_version(protocol_version: str) -> dict[str, dict[str, str]]:
+    if protocol_version == "0.9.1":
+        return L2_RUBRIC_HINTS_0_9_1
+    return L2_RUBRIC_HINTS_0_8
+
+
+def _build_l2_rubric_hints(scenario_id: str, protocol_version: str = "0.8") -> str:
+    hints = _l2_rubric_hints_for_version(protocol_version)[scenario_id]
     lines = []
     for k in ["D2-1", "D2-2", "D2-3", "D2-4", "D2-5"]:
         lines.append(f"- {k} ({L2_DIMS[k]}): {hints[k]}")
@@ -975,7 +1076,7 @@ def build_l2_judge_messages(
 
     addendum = _build_task_addendum(task)
     prompt = load_l2_judge_prompt(protocol_version).format(
-        rubric_hints=_build_l2_rubric_hints(task.scenario_id),
+        rubric_hints=_build_l2_rubric_hints(task.scenario_id, protocol_version),
         scenario_id=task.scenario_id,
         scenario_def=SCENARIO_DEFS[task.scenario_id],
         task_description=(task.task_description + ("\n\n" + addendum if addendum else "")),
@@ -1400,7 +1501,7 @@ async def evaluate_one_task(
         running_context = list(task.raw_context.get("initial_dialogue_context", task.dialogue_context))
         step_rollouts: list[dict[str, Any]] = []
         episode_turns = (
-            strip_episode_gt_a2ui(task.episode_turns)
+            filter_episode_gt_a2ui(task.episode_turns, validate_fn=stack.validate)
             if stack.strip_gt_a2ui
             else task.episode_turns
         )
@@ -1412,7 +1513,8 @@ async def evaluate_one_task(
         # Per-step L1 validation (avoids false REF_DUPLICATE_ID from cross-step ID reuse)
         step_l1_results: list[tuple[dict[str, float], bool, dict[str, Any]]] = []
         for step_idx, step in enumerate(episode_turns):
-            step_gt = [] if stack.strip_gt_a2ui else step.get("gt_a2ui", [])
+            # After filter_episode_gt_a2ui, only 0.9.1-valid gold remains.
+            step_gt = step.get("gt_a2ui", [])
             scoring_task = _make_override_task(
                 task,
                 user_message=str(step.get("user_message", "")).strip(),
@@ -1717,12 +1819,15 @@ async def evaluate_models(args) -> None:
     if not judge_api_key:
         raise RuntimeError("Missing judge API key. Set JUDGE_OPENAI_API_KEY or pass --judge-api-key.")
 
-    stack = get_protocol_stack(args.protocol_version)
+    stack = get_protocol_stack(
+        args.protocol_version,
+        catalog=getattr(args, "protocol_catalog", "basic"),
+    )
     validate_fn = stack.validate
     generation_guide = resolve_generation_guide(prompt_mode=args.prompt_mode, stack=stack)
     print(
-        f"Protocol version: {stack.version}, prompt mode: {args.prompt_mode}, "
-        f"guide_chars={len(generation_guide)}"
+        f"Protocol version: {stack.version}, catalog: {stack.catalog_name}, "
+        f"prompt mode: {args.prompt_mode}, guide_chars={len(generation_guide)}"
     )
     task_dir = Path(args.task_dir)
     out_dir = resolve_output_dir(Path(args.output_dir), args.protocol_version)
@@ -1746,6 +1851,7 @@ async def evaluate_models(args) -> None:
         out_dir / "task_sample_manifest.json",
         {
             "protocol_version": args.protocol_version,
+            "protocol_catalog": args.protocol_catalog,
             "task_dir": str(task_dir),
             "max_per_scenario": args.max_per_scenario,
             "seed": args.seed,
@@ -1786,10 +1892,12 @@ async def evaluate_models(args) -> None:
         summary["model"] = model_name
         summary["judge_model"] = args.judge_model
         summary["protocol_version"] = args.protocol_version
+        summary["protocol_catalog"] = args.protocol_catalog
         summary["elapsed_seconds"] = round(time.time() - start, 2)
         summary["generation_prompt"] = {
             "prompt_mode": args.prompt_mode,
             "protocol_version": args.protocol_version,
+            "protocol_catalog": args.protocol_catalog,
             "model_max_tokens": args.model_max_tokens,
             "schema_hint": generation_guide,
             "output_format_hint": OUTPUT_SCHEMA_HINT.strip(),
@@ -1864,13 +1972,25 @@ def parse_args():
         "--prompt-mode",
         choices=["minimal", "full"],
         default="minimal",
-        help="Prompt verbosity: minimal (stack generation guide), full (0.8 complete schema only).",
+        help=(
+            "Prompt verbosity: minimal (stack generation guide), "
+            "full (complete schema + envelope; supported on 0.8 and 0.9.1)."
+        ),
     )
     parser.add_argument(
         "--protocol-version",
         choices=["0.8", "0.9.1"],
         default="0.9.1",
         help="A2UI protocol stack (default 0.9.1; use 0.8 for legacy comparison).",
+    )
+    parser.add_argument(
+        "--protocol-catalog",
+        choices=["basic", "lumi"],
+        default=None,
+        help=(
+            "0.9.1 catalog: basic (default) or lumi. "
+            "Also reads PROTOCOL_CATALOG env when flag omitted."
+        ),
     )
     parser.add_argument(
         "--output-dir",
@@ -1882,7 +2002,14 @@ def parse_args():
     parser.add_argument("--base-url", default="", help="API base URL (fallback to OPENAI_BASE_URL env).")
     parser.add_argument("--judge-api-key", default="", help="Judge API key (fallback to JUDGE_OPENAI_API_KEY, then model API key).")
     parser.add_argument("--judge-base-url", default="", help="Judge API base URL (fallback to JUDGE_OPENAI_BASE_URL, then model base URL).")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.protocol_catalog is None:
+        args.protocol_catalog = os.environ.get("PROTOCOL_CATALOG", "basic").strip().lower() or "basic"
+    if args.protocol_catalog not in ("basic", "lumi"):
+        raise SystemExit(
+            f"Invalid protocol catalog {args.protocol_catalog!r}; expected basic|lumi"
+        )
+    return args
 
 
 def main():

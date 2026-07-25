@@ -18,3 +18,4 @@ class ProtocolStack:
     validate: ValidateFn
     render_check: RenderCheckFn
     component_schema_context: str
+    catalog_name: str = "basic"

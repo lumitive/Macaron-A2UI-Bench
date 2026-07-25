@@ -1,4 +1,4 @@
-"""A2UI v0.9.1 structural lint (Phase 1: basic catalog).
+"""A2UI v0.9.1 structural lint (basic or LUMI catalog).
 
 No silent 0.8→0.9.1 conversion — legacy shapes are rejected with
 ``STRUCT_LEGACY_0_8_SHAPE``.
@@ -6,10 +6,9 @@ No silent 0.8→0.9.1 conversion — legacy shapes are rejected with
 
 from __future__ import annotations
 
-import json
-from pathlib import Path
 from typing import Any
 
+from protocol.v0_9_1.catalog import LOCKED_CATALOG_ID, get_catalog
 from protocol.v0_9_1.diagnostics import (
     Diagnostic,
     DiagnosticCode,
@@ -20,10 +19,6 @@ from protocol.v0_9_1.diagnostics import (
 C = DiagnosticCode
 S = Severity
 
-_SPEC_DIR = Path(__file__).resolve().parent / "spec"
-_CATALOG_PATH = _SPEC_DIR / "catalogs" / "basic" / "catalog.json"
-
-LOCKED_CATALOG_ID = "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
 ACCEPTED_VERSIONS = frozenset({"v0.9", "v0.9.1"})
 VALID_ACTIONS = frozenset(
     {"createSurface", "updateComponents", "updateDataModel", "deleteSurface"}
@@ -43,18 +38,11 @@ LEGACY_MARKERS = frozenset(
 )
 
 
-def _load_known_components() -> frozenset[str]:
-    catalog = json.loads(_CATALOG_PATH.read_text(encoding="utf-8"))
-    components = catalog.get("components") or {}
-    return frozenset(components.keys())
-
-
-_KNOWN_COMPONENTS = _load_known_components()
-
-
 def validate(
     messages: list[dict],
     levels: set[int] | None = None,
+    *,
+    catalog_name: str = "basic",
 ) -> ValidationResult:
     """Validate a list of parsed A2UI v0.9.1 messages.
 
@@ -62,6 +50,9 @@ def validate(
     but Phase 1 runs the full structural+ref suite regardless of the set.
     """
     _ = levels  # Phase 1: single-pass structural lint
+    catalog = get_catalog(catalog_name)
+    expected_catalog_id = catalog.catalog_id
+    known_components = catalog.component_types
     result = ValidationResult()
 
     if not isinstance(messages, list):
@@ -183,11 +174,20 @@ def validate(
 
         if action == "createSurface":
             saw_create_surface = True
-            _check_create_surface(payload, f"{base}/createSurface", result)
+            _check_create_surface(
+                payload,
+                f"{base}/createSurface",
+                result,
+                expected_catalog_id,
+            )
         elif action == "updateComponents":
             saw_component_or_data_update = True
             saw = _check_update_components(
-                payload, f"{base}/updateComponents", result, component_ids
+                payload,
+                f"{base}/updateComponents",
+                result,
+                component_ids,
+                known_components,
             )
             saw_any_components = saw_any_components or saw
         elif action == "updateDataModel":
@@ -229,6 +229,13 @@ def validate(
             )
         )
 
+    # Deep jsonschema pass after structural/ref checks (D6b).
+    # Skip when structural errors already present — schema noise is unhelpful.
+    if result.is_valid:
+        from protocol.v0_9_1.schema_validate import validate_messages_schema
+
+        result.merge(validate_messages_schema(messages, catalog_name=catalog_name))
+
     return result
 
 
@@ -250,7 +257,10 @@ def _check_version(
 
 
 def _check_create_surface(
-    payload: dict[str, Any], path: str, result: ValidationResult
+    payload: dict[str, Any],
+    path: str,
+    result: ValidationResult,
+    expected_catalog_id: str,
 ) -> None:
     if "surfaceId" not in payload:
         result.add(
@@ -269,18 +279,18 @@ def _check_create_surface(
                 C.STRUCT_MISSING_CATALOG_ID,
                 "createSurface missing required catalogId",
                 path=f"{path}/catalogId",
-                suggestion=f'Set "catalogId": "{LOCKED_CATALOG_ID}"',
+                suggestion=f'Set "catalogId": "{expected_catalog_id}"',
             )
         )
-    elif catalog_id != LOCKED_CATALOG_ID:
+    elif catalog_id != expected_catalog_id:
         result.add(
             Diagnostic(
                 S.ERROR,
                 C.STRUCT_MISSING_CATALOG_ID,
-                f"createSurface catalogId {catalog_id!r} is not the locked "
-                f"Phase-1 basic catalog",
+                f"createSurface catalogId {catalog_id!r} does not match active "
+                f"catalog ({expected_catalog_id!r})",
                 path=f"{path}/catalogId",
-                suggestion=f'Use "{LOCKED_CATALOG_ID}"',
+                suggestion=f'Use "{expected_catalog_id}"',
             )
         )
 
@@ -290,6 +300,7 @@ def _check_update_components(
     path: str,
     result: ValidationResult,
     component_ids: set[str],
+    known_components: frozenset[str],
 ) -> bool:
     if "surfaceId" not in payload:
         result.add(
@@ -392,15 +403,15 @@ def _check_update_components(
                 )
             )
             continue
-        if discriminator not in _KNOWN_COMPONENTS:
+        if discriminator not in known_components:
             result.add(
                 Diagnostic(
                     S.ERROR,
                     C.STRUCT_UNKNOWN_COMPONENT,
                     f"Unknown component type {discriminator!r} "
-                    f"(basic catalog only in Phase 1)",
+                    f"for active catalog",
                     path=f"{cpath}/component",
-                    suggestion=f"Use one of: {', '.join(sorted(_KNOWN_COMPONENTS))}",
+                    suggestion=f"Use one of: {', '.join(sorted(known_components))}",
                 )
             )
     return saw_any

@@ -35,6 +35,7 @@ class DiagnosticCode(Enum):
 
     # Data / lint placeholders for prefix contract
     DATA_BINDING_INVALID = "DATA_BINDING_INVALID"
+    DATA_TYPE_MISMATCH = "DATA_TYPE_MISMATCH"
     LINT_MESSAGE_ORDER = "LINT_MESSAGE_ORDER"
 
 

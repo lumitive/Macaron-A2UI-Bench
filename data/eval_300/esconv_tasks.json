@@ -1682,160 +1682,30 @@
           "gt_assistant_text": "How was your career path different? I’m really sorry you’re going through this, and I want to understand so I can support you. On a scale from “not okay at all” to “completely okay,” how are you feeling right now?",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "emotionalCheckin_1",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "card_1",
-                    "component": {
-                      "Card": {
-                        "child": "column_2"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "column_2",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "slider_4",
-                            "row_5",
-                            "button_9"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "slider_4",
-                    "component": {
-                      "Slider": {
-                        "value": {
-                          "path": "/sliderValue"
-                        },
-                        "minValue": 0,
-                        "maxValue": 10
-                      }
-                    }
-                  },
-                  {
-                    "id": "row_5",
-                    "component": {
-                      "Row": {
-                        "children": {
-                          "explicitList": [
-                            "left_6",
-                            "right_7"
-                          ]
-                        },
-                        "distribution": "spaceBetween"
-                      }
-                    }
-                  },
-                  {
-                    "id": "left_6",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "not okay at all"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "right_7",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "completely okay"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "btnText_8",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "Confirm"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "button_9",
-                    "component": {
-                      "Button": {
-                        "child": "btnText_8",
-                        "primary": true,
-                        "action": {
-                          "name": "submitUserInput",
-                          "context": [
-                            {
-                              "key": "sliderValue",
-                              "value": {
-                                "path": "/sliderValue"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "How was your career path different? I’m really sorry you’re going through this, and I want to understand so I can suppor"
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "emotionalCheckin_1",
-                "contents": [
-                  {
-                    "key": "emotion_type",
-                    "valueString": "sadness"
-                  },
-                  {
-                    "key": "problem_type",
-                    "valueString": "breakup with partner"
-                  },
-                  {
-                    "key": "situation",
-                    "valueString": "I was going to marry my girlfriend but she broke up with me a prior to proposing for an unknown reason."
-                  },
-                  {
-                    "key": "current_card_type",
-                    "valueString": "simple_slider"
-                  },
-                  {
-                    "key": "current_turn_id",
-                    "valueString": "4"
-                  },
-                  {
-                    "key": "agent_context",
-                    "valueString": "How was your career path different? I understand how you are feeling everything will be okay"
-                  },
-                  {
-                    "key": "sliderValue",
-                    "valueString": "5"
-                  },
-                  {
-                    "key": "scale_left",
-                    "valueString": "not okay at all"
-                  },
-                  {
-                    "key": "scale_right",
-                    "valueString": "completely okay"
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "emotionalCheckin_1",
-                "root": "card_1"
               }
             }
           ],
@@ -1868,8 +1738,30 @@
           "gt_assistant_text": "She did not like your career path?",
           "gt_a2ui": [
             {
-              "deleteSurface": {
-                "surfaceId": "emotionalCheckin_1"
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
+                  {
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
+                  },
+                  {
+                    "id": "title",
+                    "component": "Text",
+                    "text": "She did not like your career path?"
+                  }
+                ]
               }
             }
           ],
@@ -1912,130 +1804,30 @@
           "gt_assistant_text": "I hear you. But honestly, try not to let that stress you out—you deserve someone who supports your career. If you’re willing, let’s do one small step right now: take 5 minutes to write down (1) what you gave in that relationship, (2) what you need from a future partner, and (3) one boundary you’ll keep moving forward. You can do this—focusing on yourself is the right move.",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "commitmentPrompt_2",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "card_10",
-                    "component": {
-                      "Card": {
-                        "child": "column_11"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "column_11",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_12",
-                            "text_13",
-                            "button_15"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "title_12",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "Ready to commit?"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "text_13",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "You deserve someone who supports your goals, and taking this small step can help you let go of the doubt and refocus on yourself."
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "btnText_14",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "Write my 5-minute list"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "button_15",
-                    "component": {
-                      "Button": {
-                        "child": "btnText_14",
-                        "primary": true,
-                        "action": {
-                          "name": "submitUserInput",
-                          "context": [
-                            {
-                              "key": "commitment",
-                              "value": {
-                                "literalString": "Committed: Spend 5 minutes writing a short list of what you gave in the relationship, what you need from a future partner, and one boundary you will keep moving forward."
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I hear you. But honestly, try not to let that stress you out—you deserve someone who supports your career. If you’re wil"
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "commitmentPrompt_2",
-                "contents": [
-                  {
-                    "key": "emotion_type",
-                    "valueString": "sadness"
-                  },
-                  {
-                    "key": "problem_type",
-                    "valueString": "breakup with partner"
-                  },
-                  {
-                    "key": "situation",
-                    "valueString": "I was going to marry my girlfriend but she broke up with me a prior to proposing for an unknown reason."
-                  },
-                  {
-                    "key": "current_card_type",
-                    "valueString": "commitment_card"
-                  },
-                  {
-                    "key": "current_turn_id",
-                    "valueString": "10"
-                  },
-                  {
-                    "key": "agent_context",
-                    "valueString": "Right but to be honest I would not let that stress you out or be upset about it because you do not need anybody that don't support your career I would"
-                  },
-                  {
-                    "key": "userInput",
-                    "valueString": ""
-                  },
-                  {
-                    "key": "commitment_action",
-                    "valueString": "Spend 5 minutes writing a short list of what you gave in the relationship, what you need from a future partner, and one boundary you will keep moving forward."
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "commitmentPrompt_2",
-                "root": "card_10"
               }
             }
           ],
@@ -2076,8 +1868,30 @@
           "gt_assistant_text": "Right i can understand how you are feeling. We all have been in a situation where we have the desire to marry someone and all that fails. I have been in a situation like that.",
           "gt_a2ui": [
             {
-              "deleteSurface": {
-                "surfaceId": "commitmentPrompt_2"
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
+                  {
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
+                  },
+                  {
+                    "id": "title",
+                    "component": "Text",
+                    "text": "Right i can understand how you are feeling. We all have been in a situation where we have the desire to marry someone an"
+                  }
+                ]
               }
             }
           ],
@@ -2145,7 +1959,8 @@
         6
       ],
       "depth_type": "D2",
-      "difficulty_note": "This is harder than an atomic task because the model must both preserve conversational state and correctly manage UI lifecycle behavior across turns, switching from a created surface to deletion while keeping the emotional context coherent."
+      "difficulty_note": "This is harder than an atomic task because the model must both preserve conversational state and correctly manage UI lifecycle behavior across turns, switching from a created surface to deletion while keeping the emotional context coherent.",
+      "scenario_id": "S1"
     },
     "is_positive": true
   },
@@ -8461,154 +8276,30 @@
           "gt_assistant_text": "That sounds very toxic. Would you rather focus on trying to persuade her to seek medical help, or focus on protecting your own boundaries for now? I realise she might be reluctant either way.",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "choicePanel_2",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "card_5",
-                    "component": {
-                      "Card": {
-                        "child": "column_6"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "column_6",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_7",
-                            "button_9",
-                            "button_11"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "title_7",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "Binary Choice"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "btnText_8",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "persuade her to seek medical help"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "button_9",
-                    "component": {
-                      "Button": {
-                        "child": "btnText_8",
-                        "primary": true,
-                        "action": {
-                          "name": "submitUserInput",
-                          "context": [
-                            {
-                              "key": "label",
-                              "value": {
-                                "literalString": "persuade her to seek medical help"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "btnText_10",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "protecting your own boundaries for now"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "button_11",
-                    "component": {
-                      "Button": {
-                        "child": "btnText_10",
-                        "primary": true,
-                        "action": {
-                          "name": "submitUserInput",
-                          "context": [
-                            {
-                              "key": "label",
-                              "value": {
-                                "literalString": "protecting your own boundaries for now"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "That sounds very toxic. Would you rather focus on trying to persuade her to seek medical help, or focus on protecting yo"
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "choicePanel_2",
-                "contents": [
-                  {
-                    "key": "emotion_type",
-                    "valueString": "disgust"
-                  },
-                  {
-                    "key": "problem_type",
-                    "valueString": "problems with friends"
-                  },
-                  {
-                    "key": "situation",
-                    "valueString": "I had to throw out my 13 year old sister."
-                  },
-                  {
-                    "key": "current_card_type",
-                    "valueString": "binary_choice"
-                  },
-                  {
-                    "key": "current_turn_id",
-                    "valueString": "13"
-                  },
-                  {
-                    "key": "agent_context",
-                    "valueString": "That sounds very toxic. Is it possible to persuade her to seek medical help? I realise she might be reluctant to"
-                  },
-                  {
-                    "key": "selected",
-                    "valueString": ""
-                  },
-                  {
-                    "key": "option_labels",
-                    "valueString": "persuade her to seek medical help | protecting your own boundaries for now"
-                  },
-                  {
-                    "key": "option_count",
-                    "valueString": "2"
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "choicePanel_2",
-                "root": "card_5"
               }
             }
           ],
@@ -8649,8 +8340,30 @@
           "gt_assistant_text": "Ah yes, it is a terrible time at the moment isn't it? I think a lot of people are not getting the medical help that they need because of the virus Please do not beat yourself up over this - it does sound as though you have done absolutely everything you could to help.",
           "gt_a2ui": [
             {
-              "deleteSurface": {
-                "surfaceId": "choicePanel_2"
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
+                  {
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
+                  },
+                  {
+                    "id": "title",
+                    "component": "Text",
+                    "text": "Ah yes, it is a terrible time at the moment isn't it? I think a lot of people are not getting the medical help that they"
+                  }
+                ]
               }
             }
           ],
@@ -8693,160 +8406,30 @@
           "gt_assistant_text": "I can hear how bad you’re feeling about this in your tone. To help me understand where you’re at right now, where would you place yourself on a scale from **“not at all overwhelmed”** to **“completely overwhelmed”**? And please remember—you can’t fix everything in the world on your own.",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "emotionalCheckin_3",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "card_12",
-                    "component": {
-                      "Card": {
-                        "child": "column_13"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "column_13",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "slider_15",
-                            "row_16",
-                            "button_20"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "slider_15",
-                    "component": {
-                      "Slider": {
-                        "value": {
-                          "path": "/sliderValue"
-                        },
-                        "minValue": 0,
-                        "maxValue": 10
-                      }
-                    }
-                  },
-                  {
-                    "id": "row_16",
-                    "component": {
-                      "Row": {
-                        "children": {
-                          "explicitList": [
-                            "left_17",
-                            "right_18"
-                          ]
-                        },
-                        "distribution": "spaceBetween"
-                      }
-                    }
-                  },
-                  {
-                    "id": "left_17",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "not at all overwhelmed"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "right_18",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "completely overwhelmed"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "btnText_19",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "literalString": "Confirm"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "button_20",
-                    "component": {
-                      "Button": {
-                        "child": "btnText_19",
-                        "primary": true,
-                        "action": {
-                          "name": "submitUserInput",
-                          "context": [
-                            {
-                              "key": "sliderValue",
-                              "value": {
-                                "path": "/sliderValue"
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I can hear how bad you’re feeling about this in your tone. To help me understand where you’re at right now, where would "
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "emotionalCheckin_3",
-                "contents": [
-                  {
-                    "key": "emotion_type",
-                    "valueString": "disgust"
-                  },
-                  {
-                    "key": "problem_type",
-                    "valueString": "problems with friends"
-                  },
-                  {
-                    "key": "situation",
-                    "valueString": "I had to throw out my 13 year old sister."
-                  },
-                  {
-                    "key": "current_card_type",
-                    "valueString": "simple_slider"
-                  },
-                  {
-                    "key": "current_turn_id",
-                    "valueString": "17"
-                  },
-                  {
-                    "key": "agent_context",
-                    "valueString": "I can tell that you feel really bad about this just from your  tone of voice. Please remember that you can't fix everything in the world."
-                  },
-                  {
-                    "key": "sliderValue",
-                    "valueString": "5"
-                  },
-                  {
-                    "key": "scale_left",
-                    "valueString": "not at all overwhelmed"
-                  },
-                  {
-                    "key": "scale_right",
-                    "valueString": "completely overwhelmed"
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "emotionalCheckin_3",
-                "root": "card_12"
               }
             }
           ],
@@ -8913,7 +8496,8 @@
         8
       ],
       "depth_type": "D2",
-      "difficulty_note": "This is harder than an atomic task because the model must manage UI surface lifecycle across multiple turns: begin with a decision card, delete it when the conversation naturally shifts, and then instantiate a different UI type tied to accumulated emotional context without losing continuity."
+      "difficulty_note": "This is harder than an atomic task because the model must manage UI surface lifecycle across multiple turns: begin with a decision card, delete it when the conversation naturally shifts, and then instantiate a different UI type tied to accumulated emotional context without losing continuity.",
+      "scenario_id": "S2"
     },
     "is_positive": true
   },

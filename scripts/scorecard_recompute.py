@@ -4,18 +4,17 @@
 Exit 0 only when algorithm smoke predicates hold AND computed Di match the
 claimed baseline (unless --report-only).
 
-Rescoring a dimension upward requires extending the predicates here (or a
-Track-specific test suite) so exit 0 means the algorithm bar was met.
+Requires project deps for D6b=2 (``jsonschema`` / ``referencing`` from
+requirements.txt). Prefer:
 
-Usage:
-  python3 scripts/scorecard_recompute.py
-  python3 scripts/scorecard_recompute.py --report-only
+  PYTHONPATH=. .venv/bin/python scripts/scorecard_recompute.py
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -26,18 +25,21 @@ LUMI_INVENTORY = ROOT / "docs/lumi-catalog-inventory.md"
 PIN = ROOT / "protocol/v0_9_1/UPSTREAM_PIN.txt"
 FIXTURES = ROOT / "protocol/v0_9_1/fixtures"
 EVAL_PY = ROOT / "evaluate_api_model.py"
+GOLD_DOC = ROOT / "docs/gold-v091-subset.md"
+SCHEMA_MOD = ROOT / "protocol/v0_9_1/schema_validate.py"
+SCHEMA_TEST = ROOT / "tests/protocol/test_v0_9_1_schema.py"
 LOCKED = "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
 LUMI_ID = "lumi.ai:a2ui:lumi-catalog"
 
 BASELINE = {
     "D1": 1,
     "D2": 1,
-    "D3": 0,
-    "D4": 0,
-    "D5": 0,
-    "D6a": 0,
-    "D6b": 0,
-    "D7": 1,
+    "D3": 1,
+    "D4": 1,
+    "D5": 1,
+    "D6a": 2,
+    "D6b": 2,
+    "D7": 2,
     "D8": 0,
 }
 
@@ -91,8 +93,10 @@ def score_d3() -> tuple[int, list[str]]:
         if "map_basic" not in inv and "mappable" not in inv.lower():
             errs.append("D3: inventory must document map_basic / mappable aliases")
     comps = cat.get("components") or {}
-    if len(comps) < 1:
-        errs.append("D3: LUMI catalog has no components")
+    if "Carousel" not in comps:
+        errs.append("D3: MVP requires authored lumi_unique Carousel in catalog")
+    if len(comps) < 19:  # basic 18 + Carousel
+        errs.append(f"D3: expected basic supersets + unique (≥19), got {len(comps)}")
     if errs:
         # Partial asset present but bar unmet ⇒ still 0 (fail-closed)
         return 0, errs
@@ -101,29 +105,110 @@ def score_d3() -> tuple[int, list[str]]:
 
 def score_d4() -> tuple[int, list[str]]:
     tests = list((ROOT / "tests/protocol").glob("test_v0_9_1_lumi_*.py"))
-    if not tests:
+    fixture = ROOT / "protocol/v0_9_1/fixtures/lumi/ok_carousel.json"
+    if not tests or not fixture.is_file():
         return 0, []
     return 1, []
 
 
+def _count_retained_depth_gold() -> tuple[int, set[str]]:
+    """Count 0.9.1-valid retained depth gt_a2ui turns + scenario tags.
+
+    Uses protocol lint only (no evaluate_api_model — avoids openai dep).
+    """
+    sys.path.insert(0, str(ROOT))
+    from protocol.v0_9_1.lint import validate
+
+    retained = 0
+    scenarios: set[str] = set()
+    eval_dir = ROOT / "data" / "eval_300"
+    for path in sorted(eval_dir.glob("*_tasks.json")):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for task in data:
+            if task.get("difficulty_level") != "depth":
+                continue
+            sid = (task.get("metadata") or {}).get("scenario_id")
+            turns = (task.get("context") or {}).get("episode_turns") or []
+            for turn in turns:
+                gt = turn.get("gt_a2ui")
+                if not gt:
+                    continue
+                try:
+                    result = validate(gt)
+                    ok = bool(getattr(result, "is_valid", False))
+                except Exception:
+                    ok = False
+                if ok:
+                    retained += 1
+                    if sid:
+                        scenarios.add(str(sid))
+    return retained, scenarios
+
+
 def score_d5() -> tuple[int, list[str]]:
-    if not (ROOT / "docs/gold-v091-subset.md").is_file():
-        return 0, []
-    # Subset markdown alone does not prove retained validating gold
-    return 0, []
+    errs: list[str] = []
+    if not GOLD_DOC.is_file():
+        return 0, ["D5: missing docs/gold-v091-subset.md"]
+    retained, scenarios = _count_retained_depth_gold()
+    if retained < 15:
+        errs.append(f"D5: need ≥15 retained validating gold turns, got {retained}")
+        return 0, errs
+    # D5=1 bar met; Product MVP floors (≥3 scenarios) recorded as note if unmet
+    if len(scenarios) < 3:
+        errs.append(
+            f"D5: note — Product MVP floor wants ≥3 scenario_id, got {sorted(scenarios)}"
+        )
+    return 1, errs
 
 
 def score_d6a() -> tuple[int, list[str]]:
     text = EVAL_PY.read_text(encoding="utf-8")
     if "prompt_mode=full is not supported with protocol_version=0.9.1" in text:
         return 0, []
-    return 1, []
+    if "_build_full_generation_guide_091" not in text:
+        return 1, ["D6a: full guide assembler missing (score capped at 1)"]
+    required = ("createSurface", "updateDataModel", "ChoicePicker", "catalogId")
+    missing = [t for t in required if t not in text]
+    if missing:
+        return 1, [f"D6a: full-path text missing tokens: {missing}"]
+    return 2, []
 
 
 def score_d6b() -> tuple[int, list[str]]:
-    if not (ROOT / "tests/protocol/test_v0_9_1_schema.py").is_file():
-        return 0, []
-    return 1, []
+    errs: list[str] = []
+    if not SCHEMA_TEST.is_file():
+        return 0, ["D6b: missing tests/protocol/test_v0_9_1_schema.py"]
+    if not SCHEMA_MOD.is_file():
+        return 0, ["D6b: missing protocol/v0_9_1/schema_validate.py"]
+    diag = (ROOT / "protocol/v0_9_1/diagnostics.py").read_text(encoding="utf-8")
+    if "DATA_TYPE_MISMATCH" not in diag:
+        return 1, ["D6b: DATA_TYPE_MISMATCH missing (cap 1)"]
+    # Probe: deliberate bad prop must fail
+    sys.path.insert(0, str(ROOT))
+    from protocol.v0_9_1.lint import validate
+
+    bad = [
+        {
+            "version": "v0.9.1",
+            "createSurface": {"surfaceId": "main", "catalogId": LOCKED},
+        },
+        {
+            "version": "v0.9.1",
+            "updateComponents": {
+                "surfaceId": "main",
+                "components": [
+                    {"id": "root", "component": "Column", "children": ["t"]},
+                    {"id": "t", "component": "Text", "text": 999},
+                ],
+            },
+        },
+    ]
+    result = validate(bad)
+    codes = {d.code.value for d in result.errors}
+    if result.is_valid or not (codes & {"DATA_TYPE_MISMATCH", "DATA_BINDING_INVALID"}):
+        errs.append("D6b: bad-prop probe did not fail with DATA_*")
+        return 1, errs
+    return 2, []
 
 
 def score_d7() -> tuple[int, list[str]]:
@@ -131,8 +216,21 @@ def score_d7() -> tuple[int, list[str]]:
     if not judge.is_file():
         return 0, ["D7: missing prompts/l2_judge_v091.txt"]
     text = EVAL_PY.read_text(encoding="utf-8")
-    if "dataModelUpdate" in text:
-        return 1, []
+    if "L2_RUBRIC_HINTS_0_9_1" not in text:
+        return 1, ["D7: missing versioned L2_RUBRIC_HINTS_0_9_1"]
+    # Extract 0.9.1 hints block: from assignment to next top-level assignment/comment
+    m = re.search(
+        r"L2_RUBRIC_HINTS_0_9_1\s*=\s*\{(.*?)\n\}\n",
+        text,
+        flags=re.DOTALL,
+    )
+    if not m:
+        return 1, ["D7: could not parse L2_RUBRIC_HINTS_0_9_1"]
+    block = m.group(0)
+    if "dataModelUpdate" in block:
+        return 1, ["D7: stale dataModelUpdate remains in 0.9.1 hints"]
+    if "updateDataModel" not in block:
+        return 1, ["D7: updateDataModel missing from 0.9.1 hints"]
     return 2, []
 
 

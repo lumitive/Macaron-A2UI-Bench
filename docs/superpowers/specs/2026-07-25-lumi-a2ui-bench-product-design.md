@@ -2,12 +2,13 @@
 
 **Date:** 2026-07-25  
 **Status:** Approved for implementation planning  
-**Repo (current filesystem / remote):** Macaron-A2UI-Bench → **rebrand target:** LUMI-A2UI-Bench  
+**Repo (filesystem / remote may still be `Macaron-A2UI-Bench` until operator rename):** product name **LUMI-A2UI-Bench**  
+**Brand status:** Track 1 rebrand applied in-repo (README / packages / UPSTREAM).
 **Related prior design:** [2026-07-24-a2ui-0.9.1-upgrade-design.md](./2026-07-24-a2ui-0.9.1-upgrade-design.md) (Phase 1 landed)
 
 ## 1. Problem
 
-Phase 1 delivered a dual-stack A2UI bench with **default 0.9.1 + official basic catalog**. The product is still branded **Macaron**, and the Macaron-extended component set (now productized as **LUMI-A2UI**) exists only on the **0.8** path under `vendor/a2ui_demo`. Depth gold remains 0.8-shaped and is stripped on 0.9.1. The bench cannot yet answer, with a single scorecard: “How compatible are we with official 0.9.1?” vs “How compatible are we with LUMI-A2UI?”
+Phase 1 delivered a dual-stack A2UI bench with **default 0.9.1 + official basic catalog**. The product brand is **LUMI-A2UI-Bench**; the extended component set (**LUMI-A2UI**) originates from 0.8 schemas under `vendor/a2ui_demo` and is productized on 0.9.1 via Track 2 (`--protocol-catalog lumi`). A Track 3 depth gold subset is retained on 0.9.1 (see `docs/gold-v091-subset.md`); remaining depth gold stays 0.8-shaped and is stripped. The scorecard answers “official 0.9.1?” vs “LUMI-A2UI?” via OII / LEI / EDI.
 
 ## 2. Decisions (locked)
 
@@ -66,7 +67,7 @@ Scale: **0** none · **1** partial / MVP · **2** complete. Partner indices: **O
 5. **Official infra high** — only when **OII = 4/4**.
 6. **Scenario-compatible (public)** — Business Scenario Scorecard **B-card v1** gates in the scorecard — not implied by OII/LEI/EDI.
 
-**Narrative today:** Official 0.9.1 infra is **partial (OII 2/4)**; **LUMI extension absent (LEI 0/4)**; eval depth **low (EDI 1/8)**. Post-rebrand: *LUMI-A2UI-Bench = official 0.9.1 baseline + LUMI extension track (in progress) + scenario B* (phased).*
+**Narrative today:** Official 0.9.1 infra is **partial (OII 2/4)**; **LUMI extension partial (LEI 2/4)** after Track 2 catalog MVP; eval depth **high (EDI 7/8)** after Track 3. Post-rebrand: *LUMI-A2UI-Bench = official 0.9.1 baseline + LUMI extension track + scenario B* (phased).*
 
 ## 5. Track 1 — Full rebrand
 
