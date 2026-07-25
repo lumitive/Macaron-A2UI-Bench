@@ -83,7 +83,7 @@
 
 - [ ] Thread `--protocol-catalog` through `evaluate_api_model.py` / `run_benchmark.sh`.
 - [ ] Results manifest includes `protocol_catalog`.
-- [ ] Update `docs/compatibility-scorecard.md`: set **D3≥1 AND D4≥1** only after MVP lint≡render on 0.9.1 LUMI catalog (not heritage D4).
+- [ ] Update `docs/compatibility-scorecard.md`: set **D3≥1 AND D4≥1** only after MVP lint≡render on 0.9.1 LUMI catalog (not heritage D4) **and** scorecard Recompute commands pass; refresh LEI.
 - [ ] Commit: `feat(eval): wire PROTOCOL_CATALOG=lumi and update scorecard`
 
 ### Task 7: MVP acceptance
