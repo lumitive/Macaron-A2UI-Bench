@@ -29,7 +29,7 @@
 | `system_prompt_full_v091.txt` (new) or generated artifact | Full 0.9.1 prompt body |
 | `data/eval_300/**` (selected depth files) | 0.9.1 `gt_a2ui` backfill subset |
 | `tests/protocol/test_v0_9_1_schema.py` | Schema validation cases |
-| `docs/compatibility-scorecard.md` | D5–D7 score updates |
+| `docs/compatibility-scorecard.md` | D5–D7 score updates **only after** scorecard Recompute commands pass |
 
 ---
 
@@ -66,19 +66,19 @@
 
 ### Task 4: 0.9.1 depth gold subset
 
-- [ ] Select a small depth subset (e.g. **10–20** episode turns across difficulties) from `data/eval_300` that currently embed 0.8 `gt_a2ui`.
+- [ ] Select ≥**15** retained 0.9.1-valid depth turns (scorecard **D5=1** bar; prefer spanning ≥3 `metadata.scenario_id` if targeting Product MVP floors) from `data/eval_300` that currently embed 0.8 `gt_a2ui`.
 - [ ] Hand/semi-auto rewrite those `gt_a2ui` arrays to valid **0.9.1 basic** (or LUMI if Track 2 catalog=lumi for those samples—default **basic** for this task).
 - [ ] Loader change: on 0.9.1, **keep** `gt_a2ui` when messages validate as 0.9.1; still strip legacy 0.8-shaped gold (detect via lint or key heuristics).
 - [ ] Document subset list in `docs/gold-v091-subset.md`.
 - [ ] Test: stripped count decreases; subset samples retain gold; 0.8-shaped gold still stripped.
-- [ ] Commit: `feat(data): backfill 0.9.1 gt_a2ui gold subset`
-- [ ] Update scorecard D5 → 1 (subset) or 2 if expanded later.
+- [ ] Extend `scripts/scorecard_recompute.py` D5 predicates; Commit: `feat(data): backfill 0.9.1 gt_a2ui gold subset`
+- [ ] Update scorecard D5 → 1 only after Recompute exit 0 (D5=1 ≠ Product MVP unless ≥15 **and** ≥3 scenario tags).
 
 ### Task 5: Acceptance + docs
 
 - [ ] `pytest tests/protocol` green.
 - [ ] Smoke: `python evaluate_api_model.py --help` shows full mode for 0.9.1; dry-run one sample with `--prompt-mode full --protocol-version 0.9.1` (mock/no API if needed).
-- [ ] Refresh `docs/compatibility-scorecard.md` totals.
+- [ ] Refresh `docs/compatibility-scorecard.md` **OII / LEI / EDI** (+ internal eng points only — never publish `x/18` as compatibility).
 - [ ] PR merge when CI green.
 
 ### Out of scope (do not implement here)

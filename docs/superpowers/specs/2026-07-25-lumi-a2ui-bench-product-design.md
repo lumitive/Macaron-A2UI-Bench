@@ -35,36 +35,38 @@ Relative to a hard-pinned 0.8-only Macaron bench:
 | Catalog (default) | Macaron-extended lint vs Lit standard mismatch | Official **basic** (18 types) + locked `catalogId` |
 | Renderer | `render/` :5173 only | + `render_v091/` Lit `v0_9` :5174 |
 | Eval | Single results mix risk | `results/<protocol_version>/` + manifest field |
-| Depth | 0.8 `gt_a2ui` in data | 0.9.1 path **strips** gold (dialogue-only) |
+| Depth | 0.8 `gt_a2ui` in data | 0.9.1 path **strips** gold (dialogue-only) — **hygiene gain** (no false 0.9.1 gold) **and scoring loss** (depth-comparative metrics off until D5≥1) |
 | Visual | Root 0.8 `render_check` | Stack `render_check` per protocol |
 
-**Verdict:** Strong base for scoring **official 0.9.1 basic** generators. Not yet a complete **LUMI-A2UI** compatibility product.
+**Verdict:** Partial **official 0.9.1 infra** (OII 2/4 — not “high”). Not yet a **LUMI-A2UI** compatibility product (LEI 0/4). Eval depth low (EDI 1/8).
 
 ## 4. Compatibility scorecard
 
-**Living source of truth:** [`docs/compatibility-scorecard.md`](../../compatibility-scorecard.md).  
-Scale: **0** none · **1** partial / MVP · **2** complete. Snapshot below is the 2026-07-25 baseline + gates.
+**Living source of truth:** [`docs/compatibility-scorecard.md`](../../compatibility-scorecard.md) (algorithms, recompute, Business Scenario B*).  
+Scale: **0** none · **1** partial / MVP · **2** complete. Partner indices: **OII**=(D1+D2)/4 · **LEI**=(D3+D4)/4 · **EDI**=(D5+D6a+D6b+D7)/8. Do **not** publish a single `x/18` as compatibility.
 
-| ID | Dimension | Baseline | Gate after Tracks 1–3 (MVP) | Later complete (2) |
-|----|-----------|----------|-----------------------------|--------------------|
-| D1 | Official 0.9.1 wire | 2 | 2 | 2 |
-| D2 | Official basic catalog + Lit render | 2 | 2 | 2 |
+| ID | Dimension | Baseline | Gate after Tracks 1–3 (Product MVP) | Later complete (2) |
+|----|-----------|----------|-------------------------------------|--------------------|
+| D1 | Official 0.9.1 wire | **1** | **1** (OII high / D1=2 is post-MVP completeness) | 2 |
+| D2 | Official basic catalog + Lit render | **1** | **1** (OII high / D2=2 is post-MVP completeness) | 2 |
 | D3 | LUMI extended catalog in 0.9.1 form | 0 | **≥1** (MVP unique + selector) | 2 (full inventory) |
 | D4 | LUMI↔basic mapping; lint/render consistency on **0.9.1** | 0 | **≥1** (MVP lint≡render for LUMI catalog) | 2 (full dual-catalog) |
-| D5 | 0.9.1 depth `gt_a2ui` gold | 0 | **≥1** (subset) | 2 (broad coverage) |
+| D5 | 0.9.1 depth `gt_a2ui` gold | 0 | **≥1** (subset + scenario floors in scorecard) | 2 (broad coverage) |
 | D6a | `--prompt-mode full` on 0.9.1 | 0 | 2 | 2 |
 | D6b | Deep jsonschema L1 | 0 | 2 | 2 |
 | D7 | L2/L3 hints & protocol terminology | 1 | 2 | 2 |
-| D8 | Client↔server / catalog functions | 0 | 0 | optional later |
+| D8 | Client↔server / catalog functions | 0 | 0 | optional later (commercial gap; out of EDI) |
 
 **Claim rules (fail-closed):**
 
 1. **Full LUMI compatibility** — only when **D3=2 AND D4=2**.
-2. **LUMI catalog MVP** — after Track 2, only when **D3≥1 AND D4≥1**, and only cite runs with `protocol_catalog=lumi` (never basic-default greens).
-3. **Product MVP (Tracks 1–3)** — Track 1 rebrand done + rule 2 + Track 3 gates D5≥1, D6a=2, D6b=2, D7=2.
+2. **LUMI catalog MVP** — Track 1 naming done + Track 2, only when **D3≥1 AND D4≥1**, and only cite runs with `protocol_catalog=lumi` (never basic-default greens; heritage 0.8 ≠ D4).
+3. **Product MVP (Tracks 1–3)** — rule 2 + Track 3 gates D5≥1, D6a=2, D6b=2, D7=2 **and** D5 subset floors in the scorecard (≥15 retained turns **and** ≥3 `metadata.scenario_id` values). Does **not** require OII=4/4. Catalog wedge alone ≠ Product MVP.
 4. D4 measures **0.9.1** lint≡render for LUMI — heritage 0.8 dual-catalog risk does **not** count as D4≥1.
+5. **Official infra high** — only when **OII = 4/4**.
+6. **Scenario-compatible (public)** — Business Scenario Scorecard **B-card v1** gates in the scorecard — not implied by OII/LEI/EDI.
 
-**Narrative today:** Official 0.9.1 basic compatibility is high; **LUMI-A2UI overall compatibility is low**. Post-rebrand: *LUMI-A2UI-Bench = official 0.9.1 baseline + LUMI extension track (in progress).*
+**Narrative today:** Official 0.9.1 infra is **partial (OII 2/4)**; **LUMI extension absent (LEI 0/4)**; eval depth **low (EDI 1/8)**. Post-rebrand: *LUMI-A2UI-Bench = official 0.9.1 baseline + LUMI extension track (in progress) + scenario B* (phased).*
 
 ## 5. Track 1 — Full rebrand
 
@@ -142,10 +144,11 @@ Invariant: one run = one protocol version + one active catalog end-to-end.
 ## 11. Success criteria
 
 - Public naming consistently **LUMI-A2UI-Bench** (heritage paths documented)
-- Scorecard answers “official 0.9.1 vs LUMI” quantitatively
-- Track 2 → **LUMI catalog MVP** when D3≥1 **AND** D4≥1 (0.9.1 lint≡render), citing only `protocol_catalog=lumi` runs
-- Tracks 1–3 → **Product MVP** when claim rules §4 items 2–3 hold
+- Scorecard answers “official 0.9.1 vs LUMI” via **OII / LEI / EDI** (algorithms + recompute in living scorecard)
+- Track 2 → **LUMI catalog MVP** when claim rule §4.2 holds (Track 1 + D3≥1 ∧ D4≥1, `protocol_catalog=lumi` only)
+- Tracks 1–3 → **Product MVP** when claim rules §4 items 2–3 hold (incl. D5 scenario floors; OII high is separate)
 - “Full LUMI compatibility” only when D3=2 **AND** D4=2
+- Public scenario claims only under Business Scenario **B-card v1** (scorecard B*)
 
 ## 12. Implementation plan artifacts
 
