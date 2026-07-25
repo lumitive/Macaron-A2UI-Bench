@@ -1,0 +1,35 @@
+[
+  {
+    "version": "v0.9.1",
+    "createSurface": {
+      "surfaceId": "main",
+      "catalogId": "lumi.ai:a2ui:lumi-catalog"
+    }
+  },
+  {
+    "version": "v0.9.1",
+    "updateComponents": {
+      "surfaceId": "main",
+      "components": [
+        {
+          "id": "root",
+          "component": "Carousel",
+          "children": [
+            "p1",
+            "p2"
+          ]
+        },
+        {
+          "id": "p1",
+          "component": "Text",
+          "text": "Page 1"
+        },
+        {
+          "id": "p2",
+          "component": "Text",
+          "text": "Page 2"
+        }
+      ]
+    }
+  }
+]

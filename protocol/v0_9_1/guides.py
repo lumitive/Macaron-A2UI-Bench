@@ -1,7 +1,7 @@
 """0.9.1 generation guide and judge schema context.
 
-Built from the vendored basic catalog + rules.txt. Protocol must not import
-evaluate_api_model (avoids circular imports).
+Built from the active catalog (basic or lumi) + basic rules.txt.
+Protocol must not import evaluate_api_model (avoids circular imports).
 """
 
 from __future__ import annotations
@@ -9,61 +9,13 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from protocol.v0_9_1.lint import LOCKED_CATALOG_ID
+from protocol.v0_9_1.catalog import get_catalog
 
 _SPEC_DIR = Path(__file__).resolve().parent / "spec"
-_CATALOG_PATH = _SPEC_DIR / "catalogs" / "basic" / "catalog.json"
 _RULES_PATH = _SPEC_DIR / "catalogs" / "basic" / "rules.txt"
 
-GENERATION_GUIDE = f"""You are a conversational AI assistant. Reply with natural language text and optional A2UI messages.
-
-Always output valid JSON:
-{{"text_response": "...", "a2ui": [...]}}
-
-# A2UI Protocol v0.9.1
-
-Every message object must include `"version": "v0.9.1"` and exactly one action key.
-
-Allowed message types:
-- createSurface: create a surface (required `surfaceId` + `catalogId`)
-- updateComponents: define/update the flat component list on a surface
-- updateDataModel: write/update data model values (`value` object, optional `path`)
-- deleteSurface: remove a surface
-
-Locked basic catalogId (always use this exact string):
-{LOCKED_CATALOG_ID}
-
-Component item format (flat string discriminator — NOT 0.8 key-wrapped):
-{{"id": "x", "component": "Text", "text": "Hello"}}
-
-Rules:
-- Use native JSON literals (strings, numbers, booleans, arrays, objects). Do NOT use 0.8 wrappers like literalString / valueString.
-- Do NOT use 0.8 action keys (beginRendering, surfaceUpdate, dataModelUpdate).
-- If any components are sent, include a component with `"id": "root"`.
-- Prefer a single surfaceId across the response.
-
-Minimal example:
-[
-  {{
-    "version": "v0.9.1",
-    "createSurface": {{
-      "surfaceId": "main",
-      "catalogId": "{LOCKED_CATALOG_ID}"
-    }}
-  }},
-  {{
-    "version": "v0.9.1",
-    "updateComponents": {{
-      "surfaceId": "main",
-      "components": [
-        {{"id": "root", "component": "Column", "children": ["title"]}},
-        {{"id": "title", "component": "Text", "text": "Hello"}}
-      ]
-    }}
-  }}
-]
-
-Use ONLY these basic-catalog component names:
+_BASIC_COMPONENT_BLURBS = """
+Use ONLY these component names from the active catalog:
 - Text: Display text. Required `text`. Optional `variant`.
 - Image: Image display. Required `url`. Optional `description`, `fit`, `variant`.
 - Icon: Icon display. Field `name`.
@@ -82,7 +34,68 @@ Use ONLY these basic-catalog component names:
 - ChoicePicker: Option selection (replaces 0.8 SelectionList). Fields `label`, `options`, `value`; optional `variant`, `displayStyle`, `filterable`.
 - Slider: Numeric slider. Fields `label`, `min`, `max`, `value`.
 - DateTimeInput: Date/time input. Fields `value`, `label`; optional `enableDate`, `enableTime`, `min`, `max`.
-"""
+""".strip()
+
+_LUMI_EXTRA = """
+LUMI-unique (active catalog = lumi only):
+- Carousel: Horizontal pager. Required `children` (0.9.1 ChildList of page root ids).
+""".strip()
+
+
+def build_generation_guide(catalog_name: str = "basic") -> str:
+    info = get_catalog(catalog_name)
+    extra = f"\n{_LUMI_EXTRA}\n" if info.name == "lumi" else "\n"
+    return f"""You are a conversational AI assistant. Reply with natural language text and optional A2UI messages.
+
+Always output valid JSON:
+{{"text_response": "...", "a2ui": [...]}}
+
+# A2UI Protocol v0.9.1
+
+Every message object must include `"version": "v0.9.1"` and exactly one action key.
+
+Allowed message types:
+- createSurface: create a surface (required `surfaceId` + `catalogId`)
+- updateComponents: define/update the flat component list on a surface
+- updateDataModel: write/update data model values (`value` object, optional `path`)
+- deleteSurface: remove a surface
+
+Locked catalogId for this run (always use this exact string):
+{info.catalog_id}
+
+Component item format (flat string discriminator — NOT 0.8 key-wrapped):
+{{"id": "x", "component": "Text", "text": "Hello"}}
+
+Rules:
+- Use native JSON literals (strings, numbers, booleans, arrays, objects). Do NOT use 0.8 wrappers like literalString / valueString.
+- Do NOT use 0.8 action keys (beginRendering, surfaceUpdate, dataModelUpdate).
+- If any components are sent, include a component with `"id": "root"`.
+- Prefer a single surfaceId across the response.
+
+Minimal example:
+[
+  {{
+    "version": "v0.9.1",
+    "createSurface": {{
+      "surfaceId": "main",
+      "catalogId": "{info.catalog_id}"
+    }}
+  }},
+  {{
+    "version": "v0.9.1",
+    "updateComponents": {{
+      "surfaceId": "main",
+      "components": [
+        {{"id": "root", "component": "Column", "children": ["title"]}},
+        {{"id": "title", "component": "Text", "text": "Hello"}}
+      ]
+    }}
+  }}
+]
+
+{_BASIC_COMPONENT_BLURBS}
+{extra}
+""".strip()
 
 
 def _component_prop_keys(schema: dict) -> list[str]:
@@ -104,27 +117,7 @@ def _component_description(name: str, schema: dict) -> str:
             d = " ".join(str(part.get("description", "")).strip().split())
             if d:
                 return d
-    defaults = {
-        "Text": "Plain text display.",
-        "Image": "Image display.",
-        "Icon": "Icon display.",
-        "Video": "Video player.",
-        "AudioPlayer": "Audio player.",
-        "Row": "Horizontal layout container.",
-        "Column": "Vertical layout container.",
-        "List": "List layout container.",
-        "Card": "Card container shell.",
-        "Tabs": "Tabbed content switcher.",
-        "Modal": "Modal dialog container.",
-        "Divider": "Visual separator.",
-        "Button": "Clickable action trigger.",
-        "TextField": "Text input field.",
-        "CheckBox": "Checkbox input.",
-        "ChoicePicker": "Option selection (one or more).",
-        "Slider": "Numeric slider input.",
-        "DateTimeInput": "Date/time picker input.",
-    }
-    return defaults.get(name, "A2UI component.")
+    return f"{name} component."
 
 
 def _format_props(props: list[str]) -> str:
@@ -133,19 +126,18 @@ def _format_props(props: list[str]) -> str:
     return ", ".join(props[:8])
 
 
-def _build_component_schema_context() -> str:
+def build_component_schema_context(catalog_name: str = "basic") -> str:
     """Short schema/rules summary for L2/L3 `{component_schema_context}`."""
+    info = get_catalog(catalog_name)
     fallback = (
         "## Available Components\n"
-        "Text, Image, Icon, Video, AudioPlayer, Row, Column, List, Card, Tabs, "
-        "Modal, Divider, Button, TextField, CheckBox, ChoicePicker, Slider, "
-        "DateTimeInput"
+        + ", ".join(sorted(info.component_types))
     )
-    if not _CATALOG_PATH.exists():
+    if not info.path.exists():
         return fallback
 
     try:
-        catalog = json.loads(_CATALOG_PATH.read_text(encoding="utf-8"))
+        catalog = json.loads(info.path.read_text(encoding="utf-8"))
     except Exception:
         return fallback
 
@@ -181,11 +173,13 @@ def _build_component_schema_context() -> str:
         + "\n\n## Wire-format notes\n"
         "- Protocol version: v0.9.1; actions: createSurface / updateComponents / "
         "updateDataModel / deleteSurface.\n"
-        f"- Locked catalogId: {LOCKED_CATALOG_ID}\n"
+        f"- Locked catalogId: {info.catalog_id}\n"
         '- Components use flat `"component": "TypeName"` discriminators and native literals.\n'
         "- Prefer ChoicePicker for selection (not 0.8 SelectionList).\n"
         "\nUse any component from this catalog if it helps the task and remains schema-valid."
     )
 
 
-COMPONENT_SCHEMA_CONTEXT = _build_component_schema_context()
+# Default (basic) exports for back-compat imports
+GENERATION_GUIDE = build_generation_guide("basic")
+COMPONENT_SCHEMA_CONTEXT = build_component_schema_context("basic")

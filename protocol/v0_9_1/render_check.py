@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from protocol.v0_9_1.lint import LOCKED_CATALOG_ID
+from protocol.v0_9_1.catalog import get_catalog
 
 LEGACY_ACTIONS = frozenset({"beginRendering", "surfaceUpdate", "dataModelUpdate"})
 VALID_ACTIONS = frozenset(
@@ -27,11 +27,16 @@ _SURFACE_ACTIONS = frozenset(
 )
 
 
-def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
+def render_check(
+    a2ui_messages: list[dict],
+    *,
+    catalog_name: str = "basic",
+) -> tuple[bool, list[str]]:
     """Check A2UI v0.9.1 messages for render-critical issues.
 
     Returns (pass, list_of_issue_descriptions).
     """
+    expected_catalog_id = get_catalog(catalog_name).catalog_id
     if not a2ui_messages:
         return True, []
 
@@ -72,12 +77,12 @@ def render_check(a2ui_messages: list[dict]) -> tuple[bool, list[str]]:
                 if catalog_id is None or catalog_id == "":
                     issues.append(
                         f"a2ui[{idx}]: createSurface missing required catalogId "
-                        f'(expected "{LOCKED_CATALOG_ID}")'
+                        f'(expected "{expected_catalog_id}")'
                     )
-                elif catalog_id != LOCKED_CATALOG_ID:
+                elif catalog_id != expected_catalog_id:
                     issues.append(
                         f"a2ui[{idx}]: createSurface catalogId {catalog_id!r} "
-                        f"is not the locked Phase-1 basic catalog"
+                        f"does not match active catalog ({expected_catalog_id!r})"
                     )
 
         if "updateDataModel" in msg:

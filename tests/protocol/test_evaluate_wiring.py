@@ -7,8 +7,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-import pytest
-
 from evaluate_api_model import (
     _a2ui_summary,
     parse_args,
@@ -134,10 +132,11 @@ def test_protocol_version_cli_accepts_0_9_1(monkeypatch):
     assert args.protocol_version == "0.9.1"
 
 
-def test_full_prompt_mode_with_0_9_1_is_hard_error():
+def test_full_prompt_mode_with_0_9_1_assembles_guide():
     from evaluate_api_model import resolve_generation_guide
     from protocol import get_protocol_stack
 
     stack = get_protocol_stack("0.9.1")
-    with pytest.raises(ValueError, match="full"):
-        resolve_generation_guide(prompt_mode="full", stack=stack)
+    guide = resolve_generation_guide(prompt_mode="full", stack=stack)
+    assert guide
+    assert "catalogId" in guide

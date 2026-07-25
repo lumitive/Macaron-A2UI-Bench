@@ -19,6 +19,7 @@ def build_stack() -> ProtocolStack:
     return ProtocolStack(
         version="0.8",
         catalog_id="legacy-0.8-vendor-a2ui-demo",  # local sentinel; not an upstream catalog URI
+        catalog_name="heritage",
         strip_gt_a2ui=False,
         generation_guide=GENERATION_GUIDE,
         validate=validate,

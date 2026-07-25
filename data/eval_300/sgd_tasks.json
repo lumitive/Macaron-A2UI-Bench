@@ -8320,16 +8320,28 @@
           "gt_assistant_text": "There is no ouside tables and their contact number is 510-647-5016.",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "restaurantsSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "has_seating_outdoors",
-                    "valueString": "False"
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "key": "phone_number",
-                    "valueString": "510-647-5016"
+                    "id": "title",
+                    "component": "Text",
+                    "text": "There is no ouside tables and their contact number is 510-647-5016."
                   }
                 ]
               }
@@ -8375,92 +8387,30 @@
           "gt_assistant_text": "What do you think of a shared ride?",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "ridesharingSearch",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "root_card_16",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_17"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "title_18",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_19",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "shared_ride_input_20",
-                    "component": {
-                      "CheckBox": {
-                        "label": {
-                          "literalString": "Shared_ride"
-                        },
-                        "value": {
-                          "path": "/shared_ride"
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_17",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_18",
-                            "subtitle_19",
-                            "shared_ride_input_20"
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "What do you think of a shared ride?"
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "ridesharingSearch",
-                "contents": [
-                  {
-                    "key": "title",
-                    "valueString": "Ridesharing Search"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Let me help you find a ridesharing. Please provide your preferences."
-                  },
-                  {
-                    "key": "shared_ride",
-                    "valueBoolean": false
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "ridesharingSearch",
-                "root": "root_card_16"
               }
             }
           ],
@@ -8504,20 +8454,28 @@
           "gt_assistant_text": "To confirm then that is a taxi cab for 2 to 2121 San Pablo Avenue.",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "ridesharingSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "destination",
-                    "valueString": "2121 San Pablo Avenue"
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "key": "number_of_riders",
-                    "valueNumber": 2
-                  },
-                  {
-                    "key": "shared_ride",
-                    "valueString": "True"
+                    "id": "title",
+                    "component": "Text",
+                    "text": "To confirm then that is a taxi cab for 2 to 2121 San Pablo Avenue."
                   }
                 ]
               }
@@ -8564,119 +8522,28 @@
           "gt_assistant_text": "your taxi cab is booked and will be there soon. It will be $16.93 and the journey should take 29 minutes.",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "ridesharingSearch",
-                "contents": [
-                  {
-                    "key": "ride_fare",
-                    "valueString": "$16.93"
-                  },
-                  {
-                    "key": "approximate_ride_duration",
-                    "valueNumber": 29
-                  }
-                ]
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
               }
             },
             {
-              "surfaceUpdate": {
-                "surfaceId": "generalBooking",
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "root_card_12",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_13"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "title_14",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_15",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_13",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_14",
-                            "divider_21",
-                            "confirm_details_22",
-                            "confirm_ref_23"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "divider_21",
-                    "component": {
-                      "Divider": {}
-                    }
-                  },
-                  {
-                    "id": "confirm_details_22",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/booking_details"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  },
-                  {
-                    "id": "confirm_ref_23",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/booking_ref"
-                        },
-                        "usageHint": "h4"
-                      }
-                    }
-                  }
-                ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "generalBooking",
-                "contents": [
-                  {
-                    "key": "title",
-                    "valueString": "Booking Confirmed"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Your reservation has been confirmed."
-                  },
-                  {
-                    "key": "booking_details",
-                    "valueString": "General booking confirmed"
-                  },
-                  {
-                    "key": "booking_ref",
-                    "valueString": ""
+                    "id": "title",
+                    "component": "Text",
+                    "text": "your taxi cab is booked and will be there soon. It will be $16.93 and the journey should take 29 minutes."
                   }
                 ]
               }
@@ -8753,7 +8620,8 @@
         10
       ],
       "depth_type": "D1",
-      "difficulty_note": "This is harder than an atomic task because the assistant must accumulate and preserve ride state across multiple turns, linking a UI-driven preference collection step to later text-only confirmation and booking details without losing or altering previously established slots."
+      "difficulty_note": "This is harder than an atomic task because the assistant must accumulate and preserve ride state across multiple turns, linking a UI-driven preference collection step to later text-only confirmation and booking details without losing or altering previously established slots.",
+      "scenario_id": "S5"
     },
     "is_positive": true
   },

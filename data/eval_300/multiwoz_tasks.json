@@ -1255,74 +1255,30 @@
           "gt_assistant_text": "Booking was successful, the total fee is 75.09 GBP payable at the station . Reference number is : QRZK7Y5S .",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "trainBooking",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "root_card_29",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_30"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "title_31",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_32",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_30",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_31",
-                            "subtitle_32"
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "Booking was successful, the total fee is 75.09 GBP payable at the station . Reference number is : QRZK7Y5S ."
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "trainBooking",
-                "contents": [
-                  {
-                    "key": "title",
-                    "valueString": "Train Search"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Let me help you find a train. Please provide your preferences."
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "trainBooking",
-                "root": "root_card_29"
               }
             }
           ],
@@ -1367,20 +1323,28 @@
           "gt_assistant_text": "I apologize! There are two trains leaving near your requested time. one at 14:40 and one at 15:40. Will one of those work?",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "trainSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "choice",
-                    "valueString": "two"
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "key": "leaveat",
-                    "valueString": "14:40"
-                  },
-                  {
-                    "key": "leaveat",
-                    "valueString": "15:40"
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I apologize! There are two trains leaving near your requested time. one at 14:40 and one at 15:40. Will one of those wor"
                   }
                 ]
               }
@@ -1428,12 +1392,28 @@
           "gt_assistant_text": "It will arrive at 17:23.",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "trainSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "arriveby",
-                    "valueString": "17:23"
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
+                  },
+                  {
+                    "id": "title",
+                    "component": "Text",
+                    "text": "It will arrive at 17:23."
                   }
                 ]
               }
@@ -1509,7 +1489,8 @@
         7
       ],
       "depth_type": "D3",
-      "difficulty_note": "This is harder than an atomic task because the model must detect and repair an earlier mistake, update an existing task state instead of answering independently each turn, and maintain consistency between corrected constraints, revised search results, and a later reference to one specific option."
+      "difficulty_note": "This is harder than an atomic task because the model must detect and repair an earlier mistake, update an existing task state instead of answering independently each turn, and maintain consistency between corrected constraints, revised search results, and a later reference to one specific option.",
+      "scenario_id": "S3"
     },
     "is_positive": true
   },
@@ -1579,74 +1560,30 @@
           "gt_assistant_text": "Booking was successful, the total fee is 17.89 GBP payable at the station . Reference number is : 2EDVUNPK . Can I help you with anything else today?",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "trainBooking",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "root_card_7",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_8"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "title_9",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_10",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_8",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_9",
-                            "subtitle_10"
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "Booking was successful, the total fee is 17.89 GBP payable at the station . Reference number is : 2EDVUNPK . Can I help "
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "trainBooking",
-                "contents": [
-                  {
-                    "key": "title",
-                    "valueString": "Train Search"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Let me help you find a train. Please provide your preferences."
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "trainBooking",
-                "root": "root_card_7"
               }
             }
           ],
@@ -1681,82 +1618,30 @@
           "gt_assistant_text": "I'm sorry, I'm afraid there's nothing like that in the west. There are a few options in other parts of town. Would you like to hear about them?",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "attractionSearch",
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
                 "components": [
                   {
-                    "id": "root_card_11",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_12"
-                      }
-                    }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "id": "title_13",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_14",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_12",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_13",
-                            "subtitle_14"
-                          ]
-                        }
-                      }
-                    }
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I'm sorry, I'm afraid there's nothing like that in the west. There are a few options in other parts of town. Would you l"
                   }
                 ]
-              }
-            },
-            {
-              "dataModelUpdate": {
-                "surfaceId": "attractionSearch",
-                "contents": [
-                  {
-                    "key": "title",
-                    "valueString": "Attraction Search"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Let me help you find a attraction. Please provide your preferences."
-                  },
-                  {
-                    "key": "area",
-                    "valueString": "other parts of town"
-                  },
-                  {
-                    "key": "choice",
-                    "valueString": "a few"
-                  }
-                ]
-              }
-            },
-            {
-              "beginRendering": {
-                "surfaceId": "attractionSearch",
-                "root": "root_card_11"
               }
             }
           ],
@@ -1800,36 +1685,28 @@
           "gt_assistant_text": "I see there are 5 colleges on the west side of town. There are 3 that are free to visit and 2 with entrance fees.",
           "gt_a2ui": [
             {
-              "dataModelUpdate": {
-                "surfaceId": "attractionSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
+              }
+            },
+            {
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "area",
-                    "valueString": "west side of town"
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
+                    ]
                   },
                   {
-                    "key": "choice",
-                    "valueNumber": 2
-                  },
-                  {
-                    "key": "choice",
-                    "valueNumber": 3
-                  },
-                  {
-                    "key": "choice",
-                    "valueNumber": 5
-                  },
-                  {
-                    "key": "entrancefee",
-                    "valueString": "free"
-                  },
-                  {
-                    "key": "entrancefee",
-                    "valueString": "with entrance fees"
-                  },
-                  {
-                    "key": "type",
-                    "valueString": "colleges"
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I see there are 5 colleges on the west side of town. There are 3 that are free to visit and 2 with entrance fees."
                   }
                 ]
               }
@@ -1876,142 +1753,28 @@
           "gt_assistant_text": "I would recommend clare college. It's really quite lovely there. The phone number is 01223333200. Is there anything else I can assist you with today?",
           "gt_a2ui": [
             {
-              "surfaceUpdate": {
-                "surfaceId": "attractionSearch",
-                "components": [
-                  {
-                    "id": "root_card_11",
-                    "component": {
-                      "Card": {
-                        "child": "main_column_12"
-                      }
-                    }
-                  },
-                  {
-                    "id": "title_13",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/title"
-                        },
-                        "usageHint": "h2"
-                      }
-                    }
-                  },
-                  {
-                    "id": "subtitle_14",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "/subtitle"
-                        },
-                        "usageHint": "caption"
-                      }
-                    }
-                  },
-                  {
-                    "id": "main_column_12",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "title_13",
-                            "subtitle_14",
-                            "results_list_19"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "results_list_19",
-                    "component": {
-                      "List": {
-                        "direction": "vertical",
-                        "children": {
-                          "template": {
-                            "componentId": "result_card_15",
-                            "dataBinding": "/results"
-                          }
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "result_card_15",
-                    "component": {
-                      "Card": {
-                        "child": "result_col_16"
-                      }
-                    }
-                  },
-                  {
-                    "id": "result_col_16",
-                    "component": {
-                      "Column": {
-                        "children": {
-                          "explicitList": [
-                            "result_name_17",
-                            "result_info_18"
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  {
-                    "id": "result_name_17",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "name"
-                        },
-                        "usageHint": "h3"
-                      }
-                    }
-                  },
-                  {
-                    "id": "result_info_18",
-                    "component": {
-                      "Text": {
-                        "text": {
-                          "path": "details"
-                        },
-                        "usageHint": "body"
-                      }
-                    }
-                  }
-                ]
+              "version": "v0.9.1",
+              "createSurface": {
+                "surfaceId": "main",
+                "catalogId": "https://a2ui.org/specification/v0_9/catalogs/basic/catalog.json"
               }
             },
             {
-              "dataModelUpdate": {
-                "surfaceId": "attractionSearch",
-                "contents": [
+              "version": "v0.9.1",
+              "updateComponents": {
+                "surfaceId": "main",
+                "components": [
                   {
-                    "key": "title",
-                    "valueString": "Attraction Results (1 found)"
-                  },
-                  {
-                    "key": "subtitle",
-                    "valueString": "Here are the attraction options I found for you."
-                  },
-                  {
-                    "key": "results",
-                    "valueMap": [
-                      {
-                        "key": "r1",
-                        "valueMap": [
-                          {
-                            "key": "name",
-                            "valueString": "clare college"
-                          },
-                          {
-                            "key": "details",
-                            "valueString": "phone: 01223333200"
-                          }
-                        ]
-                      }
+                    "id": "root",
+                    "component": "Column",
+                    "children": [
+                      "title"
                     ]
+                  },
+                  {
+                    "id": "title",
+                    "component": "Text",
+                    "text": "I would recommend clare college. It's really quite lovely there. The phone number is 01223333200. Is there anything else"
                   }
                 ]
               }
@@ -2085,7 +1848,8 @@
         5
       ],
       "depth_type": "D4",
-      "difficulty_note": "This is harder than an atomic task because the assistant must recover from an initial no-results search, preserve relevant constraints across turns, reinterpret the user's follow-up as a refinement rather than a new unrelated query, and keep the final recommendation consistent with the accumulated filtered state."
+      "difficulty_note": "This is harder than an atomic task because the assistant must recover from an initial no-results search, preserve relevant constraints across turns, reinterpret the user's follow-up as a refinement rather than a new unrelated query, and keep the final recommendation consistent with the accumulated filtered state.",
+      "scenario_id": "S4"
     },
     "is_positive": true
   },

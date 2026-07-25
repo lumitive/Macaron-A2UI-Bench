@@ -13,6 +13,7 @@ if [[ -f "$ENV_FILE" ]]; then
 fi
 
 PROTOCOL_VERSION="${PROTOCOL_VERSION:-0.9.1}"
+PROTOCOL_CATALOG="${PROTOCOL_CATALOG:-basic}"
 EVAL_SPLIT_DIR="${EVAL_SPLIT_DIR:-$SCRIPT_DIR/data/eval_300}"
 RESULTS_DIR="${RESULTS_DIR:-$SCRIPT_DIR/results}"
 VISUAL_COMPARE_DIR="${VISUAL_COMPARE_DIR:-$RESULTS_DIR/$PROTOCOL_VERSION/visual_compare_kimi25}"
@@ -53,6 +54,7 @@ python -u "$SCRIPT_DIR/evaluate_api_model.py" \
   --seed "$SEED" \
   --prompt-mode "$PROMPT_MODE" \
   --protocol-version "$PROTOCOL_VERSION" \
+  --protocol-catalog "$PROTOCOL_CATALOG" \
   --output-dir "$RESULTS_DIR" \
   --model-concurrency "$MODEL_CONCURRENCY" \
   --judge-concurrency "$JUDGE_CONCURRENCY"
