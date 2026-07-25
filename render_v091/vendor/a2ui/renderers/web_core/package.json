@@ -31,12 +31,12 @@
       "default": "./dist/src/v0_8/index.js"
     },
     "./v0_9": {
-      "types": "./dist/src/v0_9/index.d.ts",
-      "default": "./dist/src/v0_9/index.js"
+      "types": "./src/v0_9/index.ts",
+      "default": "./src/v0_9/index.ts"
     },
     "./v0_9/basic_catalog": {
-      "types": "./dist/src/v0_9/basic_catalog/index.d.ts",
-      "default": "./dist/src/v0_9/basic_catalog/index.js"
+      "types": "./src/v0_9/basic_catalog/index.ts",
+      "default": "./src/v0_9/basic_catalog/index.ts"
     },
     "./data/*": {
       "types": "./dist/src/v0_8/data/*.d.ts",

@@ -2,5 +2,6 @@ node_modules/
 dist/
 .wireit/
 src/v0_8/schemas/
-src/v0_9/schemas/
+# v0_9 schemas are committed so CI can resolve @a2ui/web_core/v0_9 from
+# TypeScript sources without a prebuilt dist/ (see render_v091/README.md).
 src/v1_0/schemas/
